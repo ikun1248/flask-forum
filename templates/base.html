@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=0.3, minimum-scale=0.7, maximum-scale=0.7, user-scalable=no">
+
+    <link rel="stylesheet" href="{{url_for('static',filename='bootstrap/css/bootstrap.min.css')}}">
+    <script src="{{url_for('static',filename='/jquery/jquery.3.6.min.js')}}"></script>
+    <link rel="stylesheet" href="{{url_for('static',filename='css/init.css')}}">
+    {% block head %} {% endblock %}
+    <title>{% block title %} {% endblock %}</title>
+</head>
+
+<body>
+<nav class="navbar navbar-light bg-light">
+    <div class="container px-4 px-lg-5"  style="max-width: 1200px;">
+        <a class="navbar-brand" href="{{ url_for('qa.index') }}">王座论坛</a>
+        <ul class="navbar-nav me-auto d-flex flex-row">
+            <li class="nav-item mx-2 {% if request.endpoint=='qa.index' %} active {% endif %}">
+                <a class="nav-link" href="/">首页</a>
+            </li>
+            <li class="nav-item mx-2 {% if request.endpoint=='qa.qa_public' %} active {% endif %}">
+                <a class="nav-link" href="{{ url_for('qa.qa_public') }}">发布问答</a>
+            </li>
+            <li class="nav-item mx-2 d-flex align-items-center">
+                <form class="d-flex flex-nowrap" style="min-width: 250px;" method="GET" action="{{ url_for('qa.search') }}">
+                    <input class="form-control me-2" style="width: 200px;" type="search" placeholder="关键字" aria-label="Search" name="q">
+                    <button class="btn btn-outline-success" type="submit">搜索</button>
+                </form>
+            </li>
+        </ul>
+
+        {% if user %}
+        <ul class="navbar-nav d-flex flex-row">
+            <li class="nav-item mx-2">
+                <a href="{{ url_for('profile.index')}}">
+                    <img src="{{url_for('static',filename='images/avatar/'+user.avatar)}}" id='user_avatar' width="40"
+                         height="40" style="border-radius:50%">
+                </a>
+            </li>
+            <li class="nav-item mx-2">
+                <a class="nav-link" href="{{ url_for('profile.index')}}">{{ user.nickname }}</a>
+            </li>
+            <li class="nav-item mx-2">
+                <a class="nav-link" href="{{ url_for('auth.logout') }}">退出登录</a>
+            </li>
+        </ul>
+        {% else %}
+        <ul class="navbar-nav d-flex flex-row">
+            <li class="nav-item mx-2">
+                <a class="nav-link" href="{{ url_for('auth.login') }}">登录</a>
+            </li>
+            <li class="nav-item mx-2">
+                <a class="nav-link" href="{{ url_for('auth.register') }}">注册</a>
+            </li>
+        </ul>
+        {% endif %}
+    </div>
+</nav>
+
+
+<div class="container">
+    {% block body %} {% endblock %}
+</div>
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <script>
+        {% for message in messages %}
+            alert("{{ message }}");
+        {% endfor %}
+    </script>
+    {% endif %}
+{% endwith %}
+<script rel="stylesheet" src="{{url_for('static',filename='bootstrap/js/bootstrap.bundle.min.js')}}"></script>
+{% block file %} {% endblock %}
+</body>
+</html>

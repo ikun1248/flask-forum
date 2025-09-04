@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+
+{% block head %} {% endblock %}
+{% block title %} {{user.username}}-个人中心 {% endblock %}
+
+{% block body %}
+<div class="container mt-4" style="max-width: 1100px;">
+    <div class="row" >
+        <div class="col-md-3">
+            <div class="list-group" id="profile-tabs" role="tablist">
+                <a class="list-group-item list-group-item-action active" href="#info" role="tab" data-bs-toggle="tab">个人资料</a>
+                <a class="list-group-item list-group-item-action " href="#security" role="tab" data-bs-toggle="tab" id="security-tab">安全设置</a>
+                <a class="list-group-item list-group-item-action " href="#posts" role="tab" data-bs-toggle="tab">我的帖子</a>
+                <a class="list-group-item list-group-item-action " href="#history" role="tab" data-bs-toggle="tab">浏览历史</a>
+            </div>
+        </div>
+
+        <div class="col-md-9">
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="info" role="tabpanel">
+                    <div class="avatar">
+                        <form method="POST" action="{{url_for('profile.avatar_upload')}}" class="mb-3" enctype="multipart/form-data" id="avatarForm">
+                            <input type="file" id="avatarInput" name="avatar" accept="image/*" style="display:none" onchange="document.getElementById('avatarForm').submit()">
+                            <label for="avatarInput" style="cursor:pointer;">
+                            <img src="{{url_for('static',filename='images/avatar/'+user.avatar)}}" width="100" height="100" style="border-radius:50%">
+                            </label>
+                        </form>
+                    </div>
+                    <h5>基本信息</h5>
+                    <div class="d-flex nickname-edit">
+                        <div class="d-flex align-items-center mb-3">
+                            <label class="form-label me-2 mb-0">用户昵称:</label>
+                            <span id="nickname-display">{{user.nickname}}</span>
+                            <button type="button" class="btn btn-sm btn-outline-primary ms-3" id="nickname-edit-btn">编辑</button>
+                        </div>
+                        <form method="POST" action="{{url_for('profile.nickname_upload')}}" id="nickname-edit-form" style="visibility:hidden;">
+                            <div class="d-flex align-items-center mb-2">
+                                <input type="text" class="form-control" id="nickname" name="nickname" value="{{user.nickname}}" style="width:300px">
+                                <button type="submit" class="btn btn-sm btn-outline-primary ms-3" id="nickname-save-btn">保存</button>
+                                <button type="button" class="btn btn-sm btn-outline-primary ms-3" id="nickname-cancel-btn">取消</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="d-flex username-edit ">
+                        <div class="d-flex align-items-center mb-3">
+                            <label class="form-label me-2 mb-0">用&nbsp&nbsp户&nbsp名:</label>
+                            <span id="username-display">{{user.username}}</span>
+                        </div>
+                    </div>
+                    <div class="d-flex gender-edit ">
+                         <div class="d-flex align-items-center mb-2">
+                             <label class="form-label me-2 mb-0">性&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp别:</label>
+                             <span id="gender-display">{{user.gender}}</span>
+                             <button class="btn btn-sm btn-outline-primary ms-3" id="gender-edit-btn">编辑</button>
+                         </div>
+                         <form method="POST" action="{{url_for('profile.gender_upload')}}" id="gender-edit-form" style="visibility:hidden;">
+                             <div class="d-flex align-items-center mb-2">
+                                 <div class="form-check me-3">
+                                     <input class="form-check-input" type="radio" name="gender" id="gender-male" value="男"
+                                     {% if user.gender=="男" %} checked {% endif %}>
+                                     <label class="form-check-label" for="gender-male">男</label>
+                                 </div>
+                                 <div class="form-check me-3">
+                                     <input class="form-check-input" type="radio" name="gender" id="gender-female" value="女"
+                                      {% if user.gender=='女' %} checked {% endif %}>
+                                     <label class="form-check-label" for="gender-female">女</label>
+                                 </div>
+                                 <button type="submit" class="btn btn-sm btn-outline-primary ms-3" id="gender-save-btn">保存</button>
+                                 <button type="button" class="btn btn-sm btn-outline-primary ms-3" id="gender-cancel-btn">取消</button>
+                             </div>
+                         </form>
+                     </div>
+                    <div class="d-flex address-edit ">
+                        <div class="d-flex align-items-center mb-2 flex-nowrap">
+                            <label class="form-label me-2 mb-0">所在地区:</label>
+                            <span id="address-display" >
+                                {% if user.province %}
+                                    {{user.province}}{{user.city}}
+                                {% else %}
+                                    未设置
+                                {% endif %}
+                            </span>
+                            <button type="button" class="btn btn-sm btn-outline-primary ms-3" id="address-edit-btn">编辑</button>
+                        </div>
+                        <form method="POST" action="{{url_for('profile.address_upload')}}" id="address-edit-form" style="visibility:hidden;">
+                            <div class="d-flex align-items-center mb-2">
+                                <select class="form-select me-2" id="province-select" name="province" style="width:150px">
+                                    <option >选择省份</option>
+                                </select>
+                                <select class="form-select me-2" id="city-select" name="city" style="width:150px">
+                                    <option >选择城市</option>
+                                </select>
+                                <button type="submit" class="btn btn-sm btn-outline-primary ms-3" id="address-save-btn">保存</button>
+                                <button type="button" class="btn btn-sm btn-outline-primary ms-3" id="address-cancel-btn">取消</button>
+                            </div>
+                        </form>
+                    </div>
+
+                </div>
+                <div class="tab-pane fade" id="security" role="tabpanel">
+                    <div id="security-settings">
+                        <h3>安全设置</h3>
+                        <div class="d-flex email-edit">
+                            <div class="d-flex align-items-center mb-2">
+                                <label class="form-label me-2 mb-0">邮箱:</label>
+                                <span>{{user.email}}</span>
+                                <button class="btn btn-sm btn-outline-primary ms-3" id="email-edit-btn">修改</button>
+                            </div>
+                        </div>
+                        <div class="d-flex password-edit">
+                            <div class="d-flex align-items-center mb-3">
+                                <label class="form-label me-2 mb-0">密码:</label>
+                                <span>**********</span>
+                                <button class="btn btn-sm btn-outline-primary ms-3" id="password-edit-btn">修改</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-center " style="height: 50vh;">
+                        <div id="password-setting" style="display:none">
+                            <form method="POST" action="{{url_for('profile.password_reset')}}">
+                                <div class="form-group">
+                                    <label>旧密码</label>
+                                    <input type="password" class="form-control" name="old_password" id="old_password" style="margin-top: 10px;width: 330px;">
+                                </div>
+                                <div class="form-group">
+                                    <label>新密码</label>
+                                    <input type="password" class="form-control" name="new_password" id="new_password" style="margin-top: 10px;width: 330px;">
+                                </div>
+                                <div class="form-group">
+                                    <label>确认密码</label>
+                                    <input type="password" class="form-control" name="confirm_password" id="confirm_password" style="margin-top: 10px;width: 330px;">
+                                </div>
+                                <button type="submit" class="btn btn-sm btn-outline-primary" style="margin-top: 10px;width: 330px;">确认修改</button>
+                            </form>
+                        </div>
+                        <div id="email-setting" style="display:none;margin-right:100px;margin-top:10px">
+                            <form method="POST" action="{{url_for('profile.email_reset')}}">
+                                <div class="form-group">
+                                    <label>新邮箱</label>
+                                    <input type="email" class="form-control" name="new_email" id="new_email" style="margin-top: 10px;width: 330px;">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label small">验证码</label>
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" name="captcha" id="captcha" style="margin-top: 10px;width: 180px;">
+                                        <button type="submit" class="btn btn-sm btn-outline-primary" id="captcha-btn" style="margin-top: 10px;width: 120px;">发送验证码</button>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-sm btn-outline-primary" style="margin-top:10px;width:330px">确认修改</button>
+                            </form>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="tab-pane fade" id="posts" role="tabpanel">
+                    <h3>我的帖子</h3>
+                    <div id="posts-list">
+                        {% for post in my_posts %}
+                        <div class="post-item" style="border:1px solid #ccc; padding:10px; margin-bottom:10px;">
+                            <div class="post-title">
+                                <a href="{{url_for('qa.qa_detail',qa_id=post.id)}}">{{post.title}}</a>
+                            </div>
+                            <h6>{{ post.content[:100] }}{% if post.content|length > 100 %}...{% endif %}</h6>
+                            <small>发布时间：{{ post.create_time }}</small>
+                        </div>
+                        {% else %}
+                        <p>您还没有发布任何帖子。</p>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="history" role="tabpanel">
+                    <h3>浏览过的帖子</h3>
+                    <p>点赞收藏浏览过的帖子等等</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block file %}
+<script>
+    const user={
+        province:"{{user.province}}",
+        city:"{{user.city}}"
+    }
+</script>
+<script src="{{url_for('static' ,filename='js/profile.js')}}"></script>
+{% endblock %}
