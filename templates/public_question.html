@@ -1,0 +1,491 @@
+{% extends 'base.html' %}
+{% block title %}发布新帖 - 论坛社区{% endblock %}
+{% block style %}
+        /* 主内容区样式 */
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        /* 面包屑导航 */
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #777;
+        }
+
+        .breadcrumb a {
+            color: #4a6bdf;
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .breadcrumb span {
+            color: #999;
+        }
+
+        /* 发帖表单 */
+        .post-form-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .form-header {
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .form-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 15px;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+
+        .form-control:focus {
+            border-color: #4a6bdf;
+            outline: none;
+        }
+
+        textarea.form-control {
+            min-height: 200px;
+            resize: vertical;
+            line-height: 1.6;
+        }
+
+        .form-hint {
+            font-size: 13px;
+            color: #777;
+            margin-top: 5px;
+        }
+
+        .category-option input[type="radio"] {
+            margin: 0;
+        }
+
+        .category-option label {
+            font-size: 14px;
+            color: #555;
+            cursor: pointer;
+        }
+
+        .tag-input-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .tag {
+            display: flex;
+            align-items: center;
+            background: #e0e6ef;
+            color: #4a6bdf;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .tag-remove {
+            margin-left: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .tag-input {
+            flex: 1;
+            min-width: 100px;
+            padding: 6px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 15px;
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+
+        .btn-cancel {
+            background: #f5f7fa;
+            color: #555;
+            border: 1px solid #ddd;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-cancel:hover {
+            background: #e9ecf1;
+        }
+
+        .btn-submit {
+            background: #4a6bdf;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn-submit:hover {
+            background: #3a5bc7;
+        }
+
+        /* Markdown工具栏 */
+        .markdown-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 10px;
+            padding: 8px;
+            background: #f9fafb;
+            border: 1px solid #eee;
+            border-radius: 4px;
+        }
+
+        .toolbar-btn {
+            background: white;
+            border: 1px solid #ddd;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .toolbar-btn:hover {
+            background: #f0f2f5;
+            border-color: #ccc;
+        }
+
+        /* 预览区域 */
+        .preview-container {
+            display: none;
+            border: 1px solid #eee;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 10px;
+            background: #f9fafb;
+        }
+
+        .preview-container.active {
+            display: block;
+        }
+
+        .preview-content {
+            line-height: 1.6;
+        }
+
+        .preview-content h1, .preview-content h2, .preview-content h3 {
+            margin: 15px 0 10px;
+            color: #333;
+        }
+
+        .preview-content p {
+            margin-bottom: 10px;
+        }
+
+        .preview-content code {
+            background: #f0f2f5;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+
+        .preview-content pre {
+            background: #f0f2f5;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+
+        .preview-content ul, .preview-content ol {
+            margin: 10px 0 10px 20px;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .search-input {
+                width: 150px;
+            }
+
+            .form-title {
+                font-size: 20px;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .btn-cancel, .btn-submit {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 0 15px;
+            }
+
+            .post-form-container {
+                padding: 20px;
+            }
+            .category-select {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+{% endblock %}
+
+{% block body %}
+    <!-- 主内容区 -->
+    <div class="container">
+        <!-- 面包屑导航 -->
+        <div class="breadcrumb">
+            <a href="#">首页</a>
+            <span>/</span>
+            <span>发布新帖</span>
+        </div>
+
+        <!-- 发帖表单 -->
+        <div class="post-form-container">
+            <div class="form-header">
+                <h2 class="form-title">发布新帖子</h2>
+            </div>
+
+            <form action="{{url_for('qa.qa_public')}}" method="post">
+                <div class="form-group">
+                    <label for="post-title" class="form-label">标题</label>
+                    <input type="text" class="form-control" id="post-title" name="title" placeholder="请输入帖子标题" required>
+                    <div class="form-hint">清晰明确的标题能获得更多关注</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="post-category" class="form-label">分类</label>
+                    <select class="form-control" id="post-category" name="category" required>
+                        <option value="">请选择分类</option>
+                        <option value="python">Python开发</option>
+                        <option value="frontend">前端技术</option>
+                        <option value="database">数据库</option>
+                        <option value="devops">服务器运维</option>
+                        <option value="qna">问答求助</option>
+                        <option value="share">技术分享</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="post-content" class="form-label">内容</label>
+
+                    <!-- Markdown工具栏 -->
+                    <div class="markdown-toolbar">
+                        <button type="button" class="toolbar-btn" data-tag="**粗体**">粗体</button>
+                        <button type="button" class="toolbar-btn" data-tag="_斜体_">斜体</button>
+                        <button type="button" class="toolbar-btn" data-tag="[链接](url)">链接</button>
+                        <button type="button" class="toolbar-btn" data-tag="`代码`">代码</button>
+                        <button type="button" class="toolbar-btn" data-tag="```\n代码块\n```">代码块</button>
+                        <button type="button" class="toolbar-btn" data-tag="- 列表项">列表</button>
+                        <button type="button" class="toolbar-btn" data-tag="> 引用">引用</button>
+                        <button type="button" class="toolbar-btn preview-toggle">预览</button>
+                    </div>
+
+                    <textarea class="form-control" id="post-content" name="content" placeholder="请输入帖子内容，支持Markdown格式" required></textarea>
+                    <div class="form-hint">支持Markdown语法，点击上方按钮快速插入格式</div>
+
+                    <!-- 预览区域 -->
+                    <div class="preview-container" id="preview-area">
+                        <div class="preview-content" id="preview-content"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">标签</label>
+                    <div class="tag-input-container" id="tag-container">
+                        <!-- 已添加的标签会显示在这里 -->
+                    </div>
+                    <input type="text" class="tag-input" id="tag-input" placeholder="输入标签后按回车添加">
+                    <div class="form-hint">添加相关标签，多个标签用逗号或回车分隔</div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-cancel">取消</button>
+                    <button type="submit" class="btn-submit">发布帖子</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // 简单的Markdown预览功能
+        document.addEventListener('DOMContentLoaded', function() {
+            const contentTextarea = document.getElementById('post-content');
+            const previewArea = document.getElementById('preview-area');
+            const previewContent = document.getElementById('preview-content');
+            const previewToggle = document.querySelector('.preview-toggle');
+
+            // 预览切换
+            previewToggle.addEventListener('click', function() {
+                previewArea.classList.toggle('active');
+
+                if (previewArea.classList.contains('active')) {
+                    // 简单Markdown解析
+                    let content = contentTextarea.value;
+
+                    // 替换粗体
+                    content = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+                    // 替换斜体
+                    content = content.replace(/\*(.*?)\*/g, '<em>$1</em>');
+                    content = content.replace(/_(.*?)_/g, '<em>$1</em>');
+
+                    // 替换代码
+                    content = content.replace(/`(.*?)`/g, '<code>$1</code>');
+
+                    // 替换代码块
+                    content = content.replace(/```([^`]*)```/g, '<pre><code>$1</code></pre>');
+
+                    // 替换链接
+                    content = content.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>');
+
+                    // 替换列表
+                    content = content.replace(/^- (.*?)(?=\n|$)/gm, '<li>$1</li>');
+                    content = content.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
+
+                    // 替换引用
+                    content = content.replace(/^> (.*?)(?=\n|$)/gm, '<blockquote>$1</blockquote>');
+
+                    // 替换换行
+                    content = content.replace(/\n/g, '<br>');
+
+                    previewContent.innerHTML = content;
+                }
+            });
+
+            // Markdown工具栏按钮功能
+            const toolbarButtons = document.querySelectorAll('.toolbar-btn[data-tag]');
+            toolbarButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const tag = this.getAttribute('data-tag');
+                    const startPos = contentTextarea.selectionStart;
+                    const endPos = contentTextarea.selectionEnd;
+                    const selectedText = contentTextarea.value.substring(startPos, endPos);
+
+                    let newText;
+                    if (tag.includes('\n')) {
+                        // 处理多行标签（如代码块）
+                        newText = tag.replace('代码块', selectedText);
+                    } else if (selectedText) {
+                        // 如果有选中文本，用标签包裹
+                        if (tag.startsWith('**')) {
+                            newText = `**${selectedText}**`;
+                        } else if (tag.startsWith('_')) {
+                            newText = `_${selectedText}_`;
+                        } else if (tag.startsWith('[')) {
+                            newText = `[${selectedText}](url)`;
+                        } else if (tag.startsWith('`')) {
+                            newText = `\`${selectedText}\``;
+                        } else if (tag.startsWith('-')) {
+                            newText = `- ${selectedText}`;
+                        } else if (tag.startsWith('>')) {
+                            newText = `> ${selectedText}`;
+                        } else {
+                            newText = tag;
+                        }
+                    } else {
+                        // 如果没有选中文本，直接插入标签
+                        newText = tag;
+                    }
+
+                    // 插入文本
+                    contentTextarea.value = contentTextarea.value.substring(0, startPos) +
+                                           newText +
+                                           contentTextarea.value.substring(endPos);
+
+                    // 重新聚焦到文本区域
+                    contentTextarea.focus();
+
+                    // 设置光标位置
+                    const newPos = startPos + newText.length;
+                    contentTextarea.setSelectionRange(newPos, newPos);
+                });
+            });
+
+            // 标签输入功能
+            const tagInput = document.getElementById('tag-input');
+            const tagContainer = document.getElementById('tag-container');
+
+            tagInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ',') {
+                    e.preventDefault();
+                    addTag(this.value.trim());
+                    this.value = '';
+                }
+            });
+
+            tagInput.addEventListener('blur', function() {
+                if (this.value.trim() !== '') {
+                    addTag(this.value.trim());
+                    this.value = '';
+                }
+            });
+
+            function addTag(tagText) {
+                if (tagText === '') return;
+
+                const tag = document.createElement('div');
+                tag.className = 'tag';
+                tag.innerHTML = `
+                    ${tagText}
+                    <span class="tag-remove" onclick="this.parentElement.remove()">×</span>
+                    <input type="hidden" name="tags" value="${tagText}">
+                `;
+
+                tagContainer.appendChild(tag);
+            }
+        });
+    </script>
+{% endblock %}

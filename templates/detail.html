@@ -1,0 +1,627 @@
+{% extends 'base.html' %}
+{% block title %}帖子详情 - 论坛社区{% endblock %}
+{% block style %}
+        /* 主内容区样式 */
+        .container {
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+
+        /* 面包屑导航 */
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #777;
+        }
+
+        .breadcrumb a {
+            color: #4a6bdf;
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .breadcrumb span {
+            color: #999;
+        }
+
+        /* 帖子内容区域 */
+        .post-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .post-header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .post-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+
+        .post-meta {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 14px;
+            color: #777;
+        }
+
+        .post-author {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .author-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #e0e6ef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #7a8ca5;
+            font-weight: bold;
+        }
+
+        .author-name {
+            color: #4a6bdf;
+            font-weight: 500;
+            text-decoration: none;
+        }
+
+        .author-name:hover {
+            text-decoration: underline;
+        }
+
+        .post-content {
+            padding: 20px;
+            line-height: 1.7;
+        }
+
+        .post-content p {
+            margin-bottom: 15px;
+        }
+
+        .post-footer {
+            padding: 15px 20px;
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .post-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .action-btn {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: #f5f7fa;
+            border: 1px solid #ddd;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #555;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .action-btn:hover {
+            background: #e9ecf1;
+        }
+
+        .action-btn.like {
+            color: #e74c3c;
+        }
+
+        .action-btn.like.active {
+            background: #ffece8;
+            border-color: #e74c3c;
+        }
+
+        .action-btn.bookmark {
+            color: #f39c12;
+        }
+
+        .action-btn.bookmark.active {
+            background: #fef5e7;
+            border-color: #f39c12;
+        }
+
+        .post-tags {
+            display: flex;
+            gap: 8px;
+        }
+
+        .tag {
+            background: #e0e6ef;
+            color: #4a6bdf;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        /* 回复区域 */
+        .replies-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .replies-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .reply-count {
+            color: #777;
+            font-size: 14px;
+        }
+
+        .reply-form {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 15px;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+
+        .form-control:focus {
+            border-color: #4a6bdf;
+            outline: none;
+        }
+
+        textarea.form-control {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .btn-submit {
+            background: #4a6bdf;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn-submit:hover {
+            background: #3a5bc7;
+        }
+
+        /* 回复列表 */
+        .reply-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .reply-item {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            padding: 20px;
+        }
+
+        .reply-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .reply-author {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .reply-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #e0e6ef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #7a8ca5;
+            font-weight: bold;
+        }
+
+        .reply-author-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .reply-author-name {
+            font-weight: 500;
+            color: #4a6bdf;
+            text-decoration: none;
+        }
+
+        .reply-author-name:hover {
+            text-decoration: underline;
+        }
+
+        .reply-time {
+            font-size: 13px;
+            color: #777;
+        }
+
+        .reply-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .reply-action-btn {
+            background: none;
+            border: none;
+            color: #777;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .reply-action-btn:hover {
+            color: #4a6bdf;
+        }
+
+        .reply-content {
+            line-height: 1.7;
+            margin-bottom: 15px;
+        }
+
+        .reply-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 15px;
+            border-top: 1px solid #f0f2f5;
+        }
+
+        .reply-likes {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 14px;
+            color: #777;
+        }
+
+        .like-count {
+            font-weight: 500;
+            color: #e74c3c;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .search-input {
+                width: 150px;
+            }
+
+            .post-title {
+                font-size: 20px;
+            }
+
+            .post-meta {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+
+            .post-footer {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+
+            .reply-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .reply-actions {
+                align-self: flex-end;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 0 15px;
+            }
+
+            .post-actions {
+                flex-wrap: wrap;
+            }
+        }
+{% endblock %}
+{% block body %}
+    <div class="container">
+        <!-- 面包屑导航 -->
+        <div class="breadcrumb">
+            <a href="/">首页</a>
+            <span>/</span>
+            <a href="#">Python开发</a>
+            <span>/</span>
+            <span>{{question.title}}</span>
+        </div>
+
+        <!-- 帖子内容 -->
+        <div class="post-container">
+            <div class="post-header">
+                <h1 class="post-title">{{question.title}}</h1>
+                <div class="post-meta">
+                    <div class="post-author">
+                        <img src="{{url_for('static',filename='images/avatar/'+question.author.avatar)}}" class="author-avatar"></img>
+                        <a href="#" class="author-name">{{question.author.username}}</a>
+                    </div>
+                    <div class="post-time">发布于 2小时前</div>
+                    <div class="post-views">浏览 342 次</div>
+                </div>
+            </div>
+
+            <div class="post-content" id="question-content"></div>
+
+            <div class="post-footer">
+                <div class="post-actions">
+                    <button class="action-btn like">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                        </svg>
+                        <span>赞</span>
+                        <span class="like-count">42</span>
+                    </button>
+                    <button class="action-btn bookmark">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                        <span>收藏</span>
+                    </button>
+                    <button class="action-btn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
+                            <polyline points="16 6 12 2 8 6"></polyline>
+                            <line x1="12" y1="2" x2="12" y2="15"></line>
+                        </svg>
+                        <span>分享</span>
+                    </button>
+                </div>
+
+                <div class="post-tags">
+                    <span class="tag">Flask</span>
+                    <span class="tag">部署</span>
+                    <span class="tag">Python</span>
+                    <span class="tag">最佳实践</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 回复区域 -->
+        <div class="replies-header">
+            <h2 class="replies-title">回复</h2>
+            <div class="reply-count">共 8 条回复</div>
+        </div>
+
+        <!-- 回复表单 -->
+        <form class="reply-form" action="{{url_for('qa.answer_public')}}" method='POST'>
+            <input type="hidden" name="question_id" value="{{question.id}}">
+            <div class="form-group">
+                <label for="reply-content" class="form-label">发表回复</label>
+                <textarea class="form-control" id="reply-content" name="content" placeholder="写下你的回复..."></textarea>
+            </div>
+            <button type="submit" class="btn-submit">提交回复</button>
+        </form>
+
+        <!-- 回复列表 -->
+        <div class="reply-list">
+            <!-- 回复项 -->
+
+
+            {% for answer in question.answers %}
+            <div class="reply-item">
+                <div class="reply-header">
+                    <div class="reply-author">
+                        <img src="{{url_for('static',filename='images/avatar/'+answer.author.avatar)}}" class="reply-avatar"></img>
+                        <div class="reply-author-info">
+                            <a href="#" class="reply-author-name">{{answer.author.username}}</a>
+                            <div class="reply-time">1小时前</div>
+                        </div>
+                    </div>
+                    <div class="reply-actions">
+                        <button class="reply-action-btn">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M4.5 3h15a2.5 2.5 0 0 1 0 5h-7v13a1 1 0 0 1-2 0V8h-7a2.5 2.5 0 0 1 0-5z"></path>
+                            </svg>
+                            赞
+                        </button>
+                        <button class="reply-action-btn">回复</button>
+                    </div>
+                </div>
+
+                <div class="reply-content">
+                    {{answer.content}}
+                </div>
+
+                <div class="reply-footer">
+                    <div class="reply-likes">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
+                        </svg>
+                        <span class="like-count">0</span> 人赞了这个回复
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+            <div class="reply-item">
+                <div class="reply-header">
+                    <div class="reply-author">
+                        <div class="reply-avatar">用</div>
+                        <div class="reply-author-info">
+                            <a href="#" class="reply-author-name">用户名1</a>
+                            <div class="reply-time">1小时前</div>
+                        </div>
+                    </div>
+                    <div class="reply-actions">
+                        <button class="reply-action-btn">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M4.5 3h15a2.5 2.5 0 0 1 0 5h-7v13a1 1 0 0 1-2 0V8h-7a2.5 2.5 0 0 1 0-5z"></path>
+                            </svg>
+                            赞
+                        </button>
+                        <button class="reply-action-btn">回复</button>
+                    </div>
+                </div>
+
+                <div class="reply-content">
+                    <p>对于静态文件处理，我建议使用CDN服务，比如CloudFront或者阿里云的CDN。这样可以大大减轻服务器负担，特别是对于图片、CSS和JS文件。</p>
+
+                    <p>另外，不要忘记在Flask中设置静态文件的缓存策略：</p>
+
+                    <pre><code>from flask import Flask
+from datetime import datetime, timedelta
+
+app = Flask(__name__)
+
+@app.after_request
+def add_header(response):
+    if 'Cache-Control' not in response.headers:
+        response.headers['Cache-Control'] = 'public, max-age=300'
+    return response</code></pre>
+                </div>
+
+                <div class="reply-footer">
+                    <div class="reply-likes">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
+                        </svg>
+                        <span class="like-count">15</span> 人赞了这个回复
+                    </div>
+                </div>
+            </div>
+
+            <!-- 更多回复项 -->
+            <div class="reply-item">
+                <div class="reply-header">
+                    <div class="reply-author">
+                        <div class="reply-avatar">户</div>
+                        <div class="reply-author-info">
+                            <a href="#" class="reply-author-name">用户名2</a>
+                            <div class="reply-time">45分钟前</div>
+                        </div>
+                    </div>
+                    <div class="reply-actions">
+                        <button class="reply-action-btn">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M4.5 3h15a2.5 2.5 0 0 1 0 5h-7v13a1 1 0 0 1-2 0V8h-7a2.5 2.5 0 0 1 0-5z"></path>
+                            </svg>
+                            赞
+                        </button>
+                        <button class="reply-action-btn">回复</button>
+                    </div>
+                </div>
+
+                <div class="reply-content">
+                    <p>关于数据库连接池，我推荐使用SQLAlchemy配合连接池管理。以下是我的配置：</p>
+
+                    <pre><code>from sqlalchemy import create_engine
+from sqlalchemy.pool import QueuePool
+
+engine = create_engine(
+    'mysql+pymysql://user:pass@localhost/db',
+    poolclass=QueuePool,
+    pool_size=10,
+    max_overflow=20,
+    pool_timeout=30,
+    pool_recycle=1800
+)</code></pre>
+
+                    <p>这样可以根据实际负载动态调整连接数，避免数据库连接过多或过少的问题。</p>
+                </div>
+
+                <div class="reply-footer">
+                    <div class="reply-likes">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
+                        </svg>
+                        <span class="like-count">8</span> 人赞了这个回复
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+<script>
+    const questioncontent=document.getElementById('question-content');
+    let content = '{{question.content}}';
+    // 替换粗体
+    content = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    // 替换斜体
+    content = content.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    content = content.replace(/_(.*?)_/g, '<em>$1</em>');
+    // 替换代码
+    content = content.replace(/`(.*?)`/g, '<code>$1</code>');
+    // 替换代码块
+    content = content.replace(/```([^`]*)```/g, '<pre><code>$1</code></pre>');
+    // 替换链接
+    content = content.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2">$1</a>');
+    // 替换列表
+    content = content.replace(/^- (.*?)(?=\n|$)/gm, '<li>$1</li>');
+    content = content.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
+    // 替换引用
+    content = content.replace(/^> (.*?)(?=\n|$)/gm, '<blockquote>$1</blockquote>');
+    // 替换换行
+    content = content.replace(/\n/g, '<br>');
+    questioncontent.innerHTML = content;
+</script>
+{% endblock %}

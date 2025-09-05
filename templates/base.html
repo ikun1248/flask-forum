@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>{% block title %}{% endblock %}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .navbar {
+            background: #4a6bdf;
+            color: white;
+            padding: 0 20px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-brand {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .navbar-nav {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            transition: opacity 0.3s;
+        }
+
+        .nav-link:hover {
+            opacity: 0.8;
+        }
+
+
+        .navbar-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
+            overflow: hidden;
+            transition: background 0.3s;
+        }
+
+        .search-box:focus-within {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .search-input {
+            background: transparent;
+            border: none;
+            padding: 8px 12px;
+            color: white;
+            width: 200px;
+            outline: none;
+        }
+
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .search-btn {
+            background: transparent;
+            border: none;
+            padding: 8px 10px;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .search-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            .search-input {
+                width: 150px;
+            }
+
+            .navbar-nav {
+                display: none;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .search-input {
+                width: 120px;
+            }
+
+            .navbar {
+                padding: 0 15px;
+            }
+        }
+
+        .btn-new-post {
+            background: white;
+            color: #4a6bdf;
+            padding: 8px 15px;
+            border-radius: 4px;
+            font-weight: 500;
+            transition: background 0.3s;
+            margin-left: 10px;
+            margin-right: 50px;
+            text-decoration: none;
+        }
+
+        .btn-new-post:hover {
+            background: #f0f2f5;
+        }
+
+        .thread-meta a {
+            color: #4a6bdf;
+            text-decoration: none;
+        }
+
+        .thread-meta a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 600px) {
+            .navbar {
+                padding: 0 15px;
+            }
+            .navbar-brand {
+                font-size: 18px;
+            }
+        }
+        {% block style %} {% endblock %}
+    </style>
+</head>
+<body>
+<nav class="navbar">
+    <div class="navbar-left">
+        <div class="navbar-brand">
+            <a href="/" style="text-decoration: none; color: inherit;">论坛社区</a>
+        </div>
+        <div class="navbar-nav">
+            <a href="{{url_for('qa.index')}}" class="nav-link">首页</a>
+            <a href="#" class="nav-link">分类</a>
+            <a href="#" class="nav-link">排行榜</a>
+            <a href="#" class="nav-link">通知</a>
+            <a href="#" class="nav-link">消息</a>
+            <a href="{{url_for('qa.qa_public')}}" class="btn-new-post">发帖</a>
+        </div>
+        <form class="search-box" action="{{url_for('qa.search')}}">
+            <input type="text" name='q' placeholder="搜索帖子或用户..." class="search-input">
+            <button class="search-btn" type="submit">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+            </button>
+        </form>
+    </div>
+    <div class="navbar-right">
+        <div class="navbar-nav d-flex flex-row">
+            {% if user %}
+            <div class="nav-item mx-2">
+                <a href="{{ url_for('profile.index')}}">
+                    <img src="{{url_for('static',filename='images/avatar/'+user.avatar)}}" id='user_avatar' width="40"
+                         height="40" style="border-radius:50%">
+                </a>
+            </div>
+            <div class="nav-item mx-2">
+                <a class="nav-link" href="{{ url_for('profile.index')}}">{{ user.nickname }}</a>
+            </div>
+            <div class="nav-item mx-2">
+                <a class="nav-link" href="{{ url_for('auth.logout') }}">退出登录</a>
+            </div>
+            {% else %}
+            <div class="nav-item mx-2">
+                <a class="nav-link" href="{{url_for('auth.login')}}">登录</a>
+            </div>
+            <div class="nav-item mx-2">
+                <a class="nav-link" href="{{url_for('auth.register')}}">注册</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</nav>
+{% block body %} {% endblock %}
+</body>
+</html>

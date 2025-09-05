@@ -1,0 +1,502 @@
+{% extends "base.html" %}
+
+{% block title %}论坛-首页{% endblock %}
+{% block style %}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+        }
+
+
+        /* 主内容区样式 */
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 20px;
+        }
+
+        /* 帖子列表样式 */
+        .threads-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        .threads-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .threads-header h2 {
+            font-size: 18px;
+            color: #444;
+        }
+
+        .filter-options {
+            display: flex;
+            gap: 10px;
+        }
+
+        .filter-btn {
+            background: #f5f7fa;
+            border: 1px solid #ddd;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .filter-btn.active {
+            background: #4a6bdf;
+            color: white;
+            border-color: #4a6bdf;
+        }
+
+        .thread-list {
+            list-style: none;
+        }
+
+        .thread-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #f0f2f5;
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 15px;
+            align-items: center;
+            transition: background 0.3s;
+        }
+
+        .thread-item:hover {
+            background: #f9fafb;
+        }
+
+        .thread-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e0e6ef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #7a8ca5;
+            font-weight: bold;
+        }
+
+        .thread-content {
+            overflow: hidden;
+        }
+
+        .thread-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 5px;
+            text-decoration: none;
+            display: block;
+        }
+
+        .thread-title:hover {
+            color: #4a6bdf;
+        }
+
+        .thread-meta {
+            font-size: 13px;
+            color: #777;
+        }
+
+        .thread-meta a {
+            color: #4a6bdf;
+            text-decoration: none;
+        }
+
+        .thread-meta a:hover {
+            text-decoration: underline;
+        }
+
+        .thread-stats {
+            text-align: right;
+            font-size: 13px;
+            color: #777;
+        }
+
+        .thread-replies {
+            display: block;
+            font-weight: 500;
+            color: #444;
+        }
+
+        /* 侧边栏样式 */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .sidebar-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            font-size: 16px;
+            font-weight: 500;
+            color: #444;
+        }
+
+        .sidebar-content {
+            padding: 15px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: 600;
+            color: #4a6bdf;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: #777;
+        }
+
+        .category-list {
+            list-style: none;
+        }
+
+        .category-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f2f5;
+        }
+
+        .category-item:last-child {
+            border-bottom: none;
+        }
+
+        .category-link {
+            display: flex;
+            justify-content: space-between;
+            color: #555;
+            text-decoration: none;
+        }
+
+        .category-link:hover {
+            color: #4a6bdf;
+        }
+
+        .category-count {
+            background: #f5f7fa;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+        }
+
+        /* 活跃用户列表 */
+        .user-list {
+            list-style: none;
+        }
+
+        .user-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+        }
+
+        .user-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #e0e6ef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #7a8ca5;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .user-name {
+            font-size: 14px;
+            color: #555;
+            text-decoration: none;
+        }
+
+        .user-name:hover {
+            color: #4a6bdf;
+        }
+
+        /* 分页样式 */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            gap: 5px;
+        }
+
+        .page-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 35px;
+            height: 35px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            color: #555;
+            text-decoration: none;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .page-link:hover {
+            border-color: #4a6bdf;
+            color: #4a6bdf;
+        }
+
+        .page-link.active {
+            background: #4a6bdf;
+            color: white;
+            border-color: #4a6bdf;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 900px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                order: -1;
+            }
+        }
+        @media (max-width: 600px) {
+            .container {
+                padding: 0 15px;
+            }
+
+            .thread-item {
+                grid-template-columns: 1fr;
+                text-align: center;
+                gap: 10px;
+            }
+
+            .thread-stats {
+                text-align: center;
+            }
+        }
+{% endblock %}
+{% block body %}
+    <!-- 主内容区 -->
+    <div class="container">
+        <!-- 帖子列表 -->
+        <div class="threads-container">
+            <div class="threads-header">
+                <h2>最新帖子</h2>
+                <div class="filter-options">
+                    <button class="filter-btn active">最新</button>
+                    <button class="filter-btn">热门</button>
+                    <button class="filter-btn">精华</button>
+                </div>
+            </div>
+
+            <ul class="thread-list">
+                <!-- 帖子项示例 -->
+                {% for question in questions %}
+                <li class="thread-item">
+                    <img src="{{url_for('static',filename='images/avatar/'+question.author.avatar)}}" class="thread-avatar"></img>
+                    <div class="thread-content">
+                        <a href="{{url_for('qa.qa_detail',qa_id=question.id)}}" class="thread-title">{{question.title}}</a>
+                        <div class="thread-meta">
+                            <a href="#">{{question.author.username}}</a>
+                            • 2小时前
+                        </div>
+                    </div>
+                    <div class="thread-stats">
+                        <span class="thread-replies">42</span>
+                        <span>回复</span>
+                    </div>
+                </li>
+                {% endfor %}
+
+                <li class="thread-item">
+                    <div class="thread-avatar">用户</div>
+                    <div class="thread-content">
+                        <a href="#" class="thread-title">Flask项目部署的最佳实践有哪些？</a>
+                        <div class="thread-meta">
+                            <a href="#">用户名</a> • 2小时前
+                        </div>
+                    </div>
+                    <div class="thread-stats">
+                        <span class="thread-replies">42</span>
+                        <span>回复</span>
+                    </div>
+                </li>
+
+                <li class="thread-item">
+                    <div class="thread-avatar">用户</div>
+                    <div class="thread-content">
+                        <a href="#" class="thread-title">Python异步编程在Web开发中的应用</a>
+                        <div class="thread-meta">
+                            <a href="#">用户名</a> • 5小时前
+                        </div>
+                    </div>
+                    <div class="thread-stats">
+                        <span class="thread-replies">28</span>
+                        <span>回复</span>
+                    </div>
+                </li>
+
+                <li class="thread-item">
+                    <div class="thread-avatar">用户</div>
+                    <div class="thread-content">
+                        <a href="#" class="thread-title">前端框架选择：Vue vs React vs Angular</a>
+                        <div class="thread-meta">
+                            <a href="#">用户名</a> • 昨天
+                        </div>
+                    </div>
+                    <div class="thread-stats">
+                        <span class="thread-replies">156</span>
+                        <span>回复</span>
+                    </div>
+                </li>
+
+                <!-- 更多帖子项 -->
+            </ul>
+
+            <!-- 分页 -->
+            <div class="pagination">
+                <a href="#" class="page-link">&laquo;</a>
+                <a href="#" class="page-link active">1</a>
+                <a href="#" class="page-link">2</a>
+                <a href="#" class="page-link">3</a>
+                <a href="#" class="page-link">4</a>
+                <a href="#" class="page-link">5</a>
+                <a href="#" class="page-link">&raquo;</a>
+            </div>
+        </div>
+
+        <!-- 侧边栏 -->
+        <div class="sidebar">
+            <!-- 论坛统计 -->
+            <div class="sidebar-card">
+                <div class="sidebar-header">论坛统计</div>
+                <div class="sidebar-content">
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value">1,243</div>
+                            <div class="stat-label">主题</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">5,872</div>
+                            <div class="stat-label">回复</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">893</div>
+                            <div class="stat-label">用户</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">12</div>
+                            <div class="stat-label">在线</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 分类 -->
+            <div class="sidebar-card">
+                <div class="sidebar-header">分类</div>
+                <div class="sidebar-content">
+                    <ul class="category-list">
+                        <li class="category-item">
+                            <a href="#" class="category-link">
+                                <span>Python开发</span>
+                                <span class="category-count">342</span>
+                            </a>
+                        </li>
+                        <li class="category-item">
+                            <a href="#" class="category-link">
+                                <span>前端技术</span>
+                                <span class="category-count">278</span>
+                            </a>
+                        </li>
+                        <li class="category-item">
+                            <a href="#" class="category-link">
+                                <span>数据库</span>
+                                <span class="category-count">156</span>
+                            </a>
+                        </li>
+                        <li class="category-item">
+                            <a href="#" class="category-link">
+                                <span>服务器运维</span>
+                                <span class="category-count">98</span>
+                            </a>
+                        </li>
+                        <li class="category-item">
+                            <a href="#" class="category-link">
+                                <span>问答求助</span>
+                                <span class="category-count">201</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- 活跃用户 -->
+            <div class="sidebar-card">
+                <div class="sidebar-header">活跃用户</div>
+                <div class="sidebar-content">
+                    <ul class="user-list">
+                        <li class="user-item">
+                            <div class="user-avatar">用</div>
+                            <a href="#" class="user-name">用户名1</a>
+                        </li>
+                        <li class="user-item">
+                            <div class="user-avatar">户</div>
+                            <a href="#" class="user-name">用户名2</a>
+                        </li>
+                        <li class="user-item">
+                            <div class="user-avatar">名</div>
+                            <a href="#" class="user-name">用户名3</a>
+                        </li>
+                        <li class="user-item">
+                            <div class="user-avatar">测</div>
+                            <a href="#" class="user-name">用户名4</a>
+                        </li>
+                        <li class="user-item">
+                            <div class="user-avatar">试</div>
+                            <a href="#" class="user-name">用户名5</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
