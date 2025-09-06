@@ -1,4 +1,4 @@
-from flask import Blueprint,request,render_template,url_for,flash,redirect,g
+from flask import Blueprint,request,render_template,url_for,flash,redirect,g,jsonify
 from .decorators import login_required
 from werkzeug.utils import secure_filename
 from .forms import AvatarUploadForm,NicknameForm,PasswordResetForm,EmailResetFrom
@@ -78,12 +78,12 @@ def password_reset():
         if check_password_hash(g.user.password,old_password):
             g.user.password=generate_password_hash(new_password)
             db.session.commit()
-            flash('密码修改成功')
+            print('密码修改成功')
         else:
-            flash('旧密码错误')
+            print('旧密码错误')
     else:
         for field,errors in form.errors.items():
-            flash(errors[0])
+            print(errors[0])
             break
     return redirect(url_for('profile.index'))
 
@@ -101,6 +101,7 @@ def email_reset():
             flash(errors[0])
             break
     return redirect(url_for('profile.index'))
+
 
 
 

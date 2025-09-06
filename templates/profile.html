@@ -396,6 +396,96 @@
             width: 100%;
         }
     }
+    .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #555;
+            font-weight: 600;
+        }
+    /* 安全设置表单容器样式 */
+    #email-setting form,
+#password-setting form {
+    max-width: 400px; /* 增大最大宽度 */
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* 左对齐，让label能正常显示在上方 */
+}
+
+
+    /* 表单行样式 */
+    #password-setting .form-group {
+        width: 100%;
+        max-width: 350px; /* 控制表单行最大宽度 */
+        margin-bottom: 15px;
+        justify-content: center;
+    }
+
+    /* 输入框样式 */
+    #password-setting .form-input {
+        width: 100%;
+        max-width: 300px; /* 控制输入框最大宽度 */
+        margin: 0 auto;
+    }
+
+    /* 按钮容器样式 */
+    #email-setting .form-row:last-child {
+         display: flex;
+        gap: 10px;
+        justify-content: flex;
+        margin-top: 15px;
+        width: 100%;
+        margin-left: 80px;
+    }
+    #password-setting .form-row:last-child {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        margin-top: 15px;
+        width: 55%;
+    }
+    /* 邮箱设置表单样式 */
+    #email-setting form {
+        max-width: 400px;
+        margin: 0 auto;
+    }
+
+    #email-setting .form-group {
+    width: 100%; /* 占满容器宽度 */
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column; /* 纵向排列label和输入框 */
+}
+
+    #email-setting .form-input {
+        width: 300px; /* 固定邮箱输入框宽度 */
+    }
+
+    /* 验证码行特定样式 */
+    #email-setting .form-row:nth-child(2) {
+        display: flex;
+        justify-content: center;
+        gap: 0; /* 移除默认间隙 */
+    }
+
+    #email-setting .captcha-container {
+        display: flex;
+        width: 300px; /* 与邮箱输入框相同宽度 */
+    }
+
+    #email-setting #captcha {
+        flex: 1;
+        border-radius: 4px 0 0 4px; /* 左侧圆角 */
+        border-right: none; /* 移除右侧边框 */
+    }
+
+    #email-setting #captcha-btn {
+        width: 120px;
+        border-radius: 0 4px 4px 0; /* 右侧圆角 */
+        white-space: nowrap;
+    }
+
 {% endblock %}
 {% block body %}
     <!-- 个人中心内容 -->
@@ -444,11 +534,11 @@
                         <p>注册时间: {{ user.join_time.strftime("%Y-%m-%d") }}</p>
                         <div class="user-stats">
                             <div class="stat-item">
-                                <span class="stat-value">42</span>
+                                <span class="stat-value">{{user.questions|length}}</span>
                                 <span class="stat-label">帖子</span>
                             </div>
                             <div class="stat-item">
-                                <span class="stat-value">128</span>
+                                <span class="stat-value">{{user.answers|length}}</span>
                                 <span class="stat-label">回复</span>
                             </div>
                             <div class="stat-item">
@@ -541,7 +631,7 @@
 
                     <div class="security-item">
                         <div class="security-label">邮箱</div>
-                        <div class="security-value">user@example.com</div>
+                        <div class="security-value">{{user.email}}</div>
                         <button class="btn-edit" id="email-edit-btn">修改</button>
                     </div>
 
@@ -553,15 +643,20 @@
                 </div>
 
                 <!-- 邮箱修改表单 -->
+                <!-- 邮箱修改表单 -->
                 <div id="email-setting" style="display:none">
                     <h3 class="section-title">修改邮箱</h3>
                     <form method="POST" action="{{url_for('profile.email_reset')}}">
-                        <div class="form-row">
+                        <div class="form-group">
+                            <label for="new_email">新邮箱</label>
                             <input type="email" class="form-input" name="new_email" id="new_email" placeholder="请输入新邮箱" required>
                         </div>
-                        <div class="form-row">
-                            <input type="text" class="form-input" name="captcha" id="captcha" placeholder="请输入验证码" style="flex: 1;" required>
-                            <button type="button" class="btn-save" id="captcha-btn" style="width: 120px;">发送验证码</button>
+                        <div class="form-group">
+                            <label for="captcha">验证码</label>
+                            <div class="captcha-container">
+                                <input type="text" class="form-input" name="captcha" id="captcha" placeholder="请输入验证码" required>
+                                <button type="button" class="btn-save" id="captcha-btn">发送验证码</button>
+                            </div>
                         </div>
                         <div class="form-row">
                             <button type="submit" class="btn-save">确认修改</button>
@@ -570,21 +665,24 @@
                     </form>
                 </div>
 
-                <!-- 密码修改表单 -->
+<!-- 密码修改表单 -->
                 <div id="password-setting" style="display:none">
                     <h3 class="section-title">修改密码</h3>
                     <form method="POST" action="{{url_for('profile.password_reset')}}">
-                        <div class="form-row">
+                        <div class="form-group">
+                            <label for="old_password">旧密码</label>
                             <input type="password" class="form-input" name="old_password" id="old_password" placeholder="请输入旧密码" required>
                         </div>
-                        <div class="form-row">
+                        <div class="form-group">
+                            <label for="new_password">新密码</label>
                             <input type="password" class="form-input" name="new_password" id="new_password" placeholder="请输入新密码" required>
                         </div>
-                        <div class="form-row">
+                        <div class="form-group">
+                            <label for="confirm_password">确认新密码</label>
                             <input type="password" class="form-input" name="confirm_password" id="confirm_password" placeholder="请确认新密码" required>
                         </div>
                         <div class="form-row">
-                            <button type="submit" class="btn-save">确认修改</button>
+                            <button type="submit" class="btn-save" id="password-save-btn">确认修改</button>
                             <button type="button" class="btn-cancel" id="password-cancel-btn">取消</button>
                         </div>
                     </form>
@@ -602,7 +700,7 @@
                             <a href="{{url_for('qa.qa_detail',qa_id=question.id)}}">{{question.title}}</a>
                         </div>
                         <div class="post-meta">
-                            发布于 {{question.create_time.strftime("%Y-%m-%d")}} • 42 回复 • 128 浏览
+                            发布于 {{question.create_time.strftime("%Y-%m-%d")}} • {{question.answers|length}} 回复 • 128 浏览
                         </div>
                     </li>
                     {% endfor %}
@@ -638,116 +736,163 @@
 
     // 页面加载后执行
     document.addEventListener('DOMContentLoaded', function() {
-        // 标签页切换
-        const tabs = document.querySelectorAll('.tab-item');
-        const panes = document.querySelectorAll('.tab-pane');
+            // 标签页切换
+            const tabs = document.querySelectorAll('.tab-item');
+            const panes = document.querySelectorAll('.tab-pane');
 
-        tabs.forEach(tab => {
-            tab.addEventListener('click', function() {
-                // 移除所有active类
-                tabs.forEach(t => t.classList.remove('active'));
-                panes.forEach(p => p.classList.remove('active'));
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // 移除所有active类
+                    tabs.forEach(t => t.classList.remove('active'));
+                    panes.forEach(p => p.classList.remove('active'));
 
-                // 添加active类到当前标签
-                this.classList.add('active');
-                document.getElementById(this.dataset.tab).classList.add('active');
+                    // 添加active类到当前标签
+                    this.classList.add('active');
+                    document.getElementById(this.dataset.tab).classList.add('active');
+
+                    // 切换到安全设置时，显示安全设置主页面
+                    if (this.dataset.tab === 'security') {
+                        document.getElementById("security-settings").style.display = 'block';
+                        document.getElementById("password-setting").style.display = 'none';
+                        document.getElementById("email-setting").style.display = 'none';
+                    }
+                });
             });
-        });
 
         // 省份下拉框改变事件
-        document.getElementById("province-select").addEventListener('change', function(){
-            const selectedProvince = this.value;
-            populateCities(selectedProvince);
-        });
+            document.getElementById("province-select").addEventListener('change', function(){
+                const selectedProvince = this.value;
+                populateCities(selectedProvince);
+            });
 
         // 昵称编辑功能
-        document.getElementById("nickname-edit-btn").addEventListener('click',function(){
-            document.getElementById("nickname-edit-form").classList.add('active');
-            document.getElementById("nickname-display").style.display = 'none';
-            this.style.display = 'none';
-        });
+            document.getElementById("nickname-edit-btn").addEventListener('click', function(){
+                    document.getElementById("nickname-edit-form").classList.add('active');
+                    document.getElementById("nickname-display").style.display = 'none';
+                    this.style.display = 'none';
+                });
 
-        document.getElementById("nickname-cancel-btn").addEventListener('click',function(){
-            document.getElementById("nickname-edit-form").classList.remove('active');
-            document.getElementById("nickname-display").style.display = "block";
-            document.getElementById("nickname-edit-btn").style.display = 'inline-block';
-        });
+            document.getElementById("nickname-cancel-btn").addEventListener('click', function(){
+                document.getElementById("nickname-edit-form").classList.remove('active');
+                document.getElementById("nickname-display").style.display = "block";
+                document.getElementById("nickname-edit-btn").style.display = 'inline-block';
+            });
+
 
         // 性别编辑功能
-        document.getElementById("gender-edit-btn").addEventListener('click',function(){
-            document.getElementById("gender-edit-form").classList.add('active');
-            document.getElementById("gender-display").style.display = 'none';
-            this.style.display = 'none';
-        });
+            document.getElementById("gender-edit-btn").addEventListener('click', function(){
+                    document.getElementById("gender-edit-form").classList.add('active');
+                    document.getElementById("gender-display").style.display = 'none';
+                    this.style.display = 'none';
+                });
 
-        document.getElementById("gender-cancel-btn").addEventListener('click',function(){
-            document.getElementById("gender-edit-form").classList.remove('active');
-            document.getElementById("gender-display").style.display = 'block';
-            document.getElementById("gender-edit-btn").style.display = 'inline-block';
-        });
+            document.getElementById("gender-cancel-btn").addEventListener('click', function(){
+                document.getElementById("gender-edit-form").classList.remove('active');
+                document.getElementById("gender-display").style.display = 'block';
+                document.getElementById("gender-edit-btn").style.display = 'inline-block';
+            });
+
+
 
         // 地区编辑功能
-        document.getElementById("address-edit-btn").addEventListener('click',function(){
-            document.getElementById("address-edit-form").classList.add('active');
-            document.getElementById("address-display").style.display = 'none';
-            this.style.display = 'none';
-        });
+            document.getElementById("address-edit-btn").addEventListener('click',function(){
+                document.getElementById("address-edit-form").classList.add('active');
+                document.getElementById("address-display").style.display = 'none';
+                this.style.display = 'none';
+            });
 
-        document.getElementById("address-cancel-btn").addEventListener('click',function(){
-            document.getElementById("address-edit-form").classList.remove('active');
-            document.getElementById("address-display").style.display = 'block';
-            document.getElementById("address-edit-btn").style.display = 'inline-block';
-        });
+            document.getElementById("address-cancel-btn").addEventListener('click',function(){
+                document.getElementById("address-edit-form").classList.remove('active');
+                document.getElementById("address-display").style.display = 'block';
+                document.getElementById("address-edit-btn").style.display = 'inline-block';
+            });
 
         // 安全设置切换
-        document.getElementById("security-tab").addEventListener('click',function(){
-            document.getElementById("security-settings").style.display = 'block';
-            document.getElementById("password-setting").style.display = 'none';
-            document.getElementById("email-setting").style.display = 'none';
-        });
-
-        document.getElementById("password-edit-btn").addEventListener('click',function(){
-            document.getElementById('security-settings').style.display = 'none';
-            document.getElementById('password-setting').style.display = 'block';
-        });
-
-        document.getElementById("email-edit-btn").addEventListener('click',function(){
-            document.getElementById('security-settings').style.display = 'none';
-            document.getElementById('email-setting').style.display = 'block';
-        });
-
-        // 发送验证码按钮
-        const captchaBtn = document.getElementById('captcha-btn');
-        if (captchaBtn) {
-            captchaBtn.addEventListener('click', function() {
-                this.disabled = true;
-                let countdown = 60;
-
-                const timer = setInterval(() => {
-                    this.textContent = `重新发送(${countdown})`;
-                    countdown--;
-
-                    if (countdown < 0) {
-                        clearInterval(timer);
-                        this.textContent = '发送验证码';
-                        this.disabled = false;
-                    }
-                }, 1000);
-
-                // 这里应该调用发送验证码的API
-                alert('验证码已发送到您的邮箱');
+            document.getElementById("email-edit-btn").addEventListener('click', function(){
+                document.getElementById('security-settings').style.display = 'none';
+                document.getElementById('email-setting').style.display = 'block';
             });
-        }
 
-        // 表单提交处理
-        document.querySelectorAll('form').forEach(form => {
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-                alert('保存成功！');
-                location.reload(); // 重新加载页面以更新显示的值
+            document.getElementById("password-edit-btn").addEventListener('click', function(){
+                document.getElementById('security-settings').style.display = 'none';
+                document.getElementById('password-setting').style.display = 'block';
             });
+
+            document.getElementById("email-cancel-btn").addEventListener('click', function(){
+                document.getElementById('email-setting').style.display = 'none';
+                document.getElementById('security-settings').style.display = 'block';
+            });
+
+            document.getElementById("password-cancel-btn").addEventListener('click', function(){
+                document.getElementById('password-setting').style.display = 'none';
+                document.getElementById('security-settings').style.display = 'block';
+            });
+
+            // 发送验证码按钮
+        function EmailCaptchaClick(){
+        $("#captcha-btn").click(function(event){
+        event.preventDefault();
+        var $this=$(this)
+        var email= $("input[name='new_email']").val();
+        $.ajax({
+            url:'/auth/captcha/email?email='+email,
+            method:'GET',
+            success:function(result){
+                var code=result['code'];
+                $this.off("click")
+                if(code==200){
+                    var countdown=60
+                    var timer=setInterval(function(){
+                        $this.text(countdown+'s')
+                        countdown--;
+                        if(countdown<=0){
+                            $this.text("获取验证码")
+                            clearInterval(timer);
+                            EmailCaptchaClick();
+                        }
+                    },1000)
+                    alert("邮箱验证码发送成功")
+                }
+                else{
+                    alert(result['message']);
+                    EmailCaptchaClick();
+                }
+            },
+            fail:function(error){
+                console.log(error);
+            }
+        })
         });
+    }
+    $(function(){
+        EmailCaptchaClick();
     });
+
+            // 邮箱保存按钮
+            document.getElementById('email-save-btn').addEventListener('click', function() {
+                const newEmail = document.getElementById('new_email').value;
+                if (newEmail) {
+                    alert('邮箱已更新为: ' + newEmail);
+                    document.getElementById('email-setting').style.display = 'none';
+                    document.getElementById('security-settings').style.display = 'block';
+                }
+            });
+
+            // 密码保存按钮
+            document.getElementById('password-save-btn').addEventListener('click', function() {
+                const newPassword = document.getElementById('new_password').value;
+                const confirmPassword = document.getElementById('confirm_password').value;
+
+                if (newPassword !== confirmPassword) {
+                    alert('两次输入的密码不一致！');
+                    return;
+                }
+
+                alert('密码已更新！');
+                document.getElementById('password-setting').style.display = 'none';
+                document.getElementById('security-settings').style.display = 'block';
+            });
+        });
 
     // 填充省份函数
     function populateProvinces(){
@@ -783,5 +928,6 @@
             });
         }
     }
+
 </script>
 {% endblock %}

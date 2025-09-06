@@ -404,7 +404,7 @@
                         <img src="{{url_for('static',filename='images/avatar/'+question.author.avatar)}}" class="author-avatar"></img>
                         <a href="#" class="author-name">{{question.author.username}}</a>
                     </div>
-                    <div class="post-time">发布于 2小时前</div>
+                    <div class="post-time" data-time="{{question.create_time}}"></div>
                     <div class="post-views">浏览 342 次</div>
                 </div>
             </div>
@@ -448,7 +448,7 @@
         <!-- 回复区域 -->
         <div class="replies-header">
             <h2 class="replies-title">回复</h2>
-            <div class="reply-count">共 8 条回复</div>
+            <div class="reply-count">共 {{question.answers|length}} 条回复</div>
         </div>
 
         <!-- 回复表单 -->
@@ -473,7 +473,7 @@
                         <img src="{{url_for('static',filename='images/avatar/'+answer.author.avatar)}}" class="reply-avatar"></img>
                         <div class="reply-author-info">
                             <a href="#" class="reply-author-name">{{answer.author.username}}</a>
-                            <div class="reply-time">1小时前</div>
+                            <div class="reply-time" data-time="{{answer.create_time}}"></div>
                         </div>
                     </div>
                     <div class="reply-actions">
@@ -501,103 +501,6 @@
                 </div>
             </div>
             {% endfor %}
-
-            <div class="reply-item">
-                <div class="reply-header">
-                    <div class="reply-author">
-                        <div class="reply-avatar">用</div>
-                        <div class="reply-author-info">
-                            <a href="#" class="reply-author-name">用户名1</a>
-                            <div class="reply-time">1小时前</div>
-                        </div>
-                    </div>
-                    <div class="reply-actions">
-                        <button class="reply-action-btn">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M4.5 3h15a2.5 2.5 0 0 1 0 5h-7v13a1 1 0 0 1-2 0V8h-7a2.5 2.5 0 0 1 0-5z"></path>
-                            </svg>
-                            赞
-                        </button>
-                        <button class="reply-action-btn">回复</button>
-                    </div>
-                </div>
-
-                <div class="reply-content">
-                    <p>对于静态文件处理，我建议使用CDN服务，比如CloudFront或者阿里云的CDN。这样可以大大减轻服务器负担，特别是对于图片、CSS和JS文件。</p>
-
-                    <p>另外，不要忘记在Flask中设置静态文件的缓存策略：</p>
-
-                    <pre><code>from flask import Flask
-from datetime import datetime, timedelta
-
-app = Flask(__name__)
-
-@app.after_request
-def add_header(response):
-    if 'Cache-Control' not in response.headers:
-        response.headers['Cache-Control'] = 'public, max-age=300'
-    return response</code></pre>
-                </div>
-
-                <div class="reply-footer">
-                    <div class="reply-likes">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
-                        </svg>
-                        <span class="like-count">15</span> 人赞了这个回复
-                    </div>
-                </div>
-            </div>
-
-            <!-- 更多回复项 -->
-            <div class="reply-item">
-                <div class="reply-header">
-                    <div class="reply-author">
-                        <div class="reply-avatar">户</div>
-                        <div class="reply-author-info">
-                            <a href="#" class="reply-author-name">用户名2</a>
-                            <div class="reply-time">45分钟前</div>
-                        </div>
-                    </div>
-                    <div class="reply-actions">
-                        <button class="reply-action-btn">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M4.5 3h15a2.5 2.5 0 0 1 0 5h-7v13a1 1 0 0 1-2 0V8h-7a2.5 2.5 0 0 1 0-5z"></path>
-                            </svg>
-                            赞
-                        </button>
-                        <button class="reply-action-btn">回复</button>
-                    </div>
-                </div>
-
-                <div class="reply-content">
-                    <p>关于数据库连接池，我推荐使用SQLAlchemy配合连接池管理。以下是我的配置：</p>
-
-                    <pre><code>from sqlalchemy import create_engine
-from sqlalchemy.pool import QueuePool
-
-engine = create_engine(
-    'mysql+pymysql://user:pass@localhost/db',
-    poolclass=QueuePool,
-    pool_size=10,
-    max_overflow=20,
-    pool_timeout=30,
-    pool_recycle=1800
-)</code></pre>
-
-                    <p>这样可以根据实际负载动态调整连接数，避免数据库连接过多或过少的问题。</p>
-                </div>
-
-                <div class="reply-footer">
-                    <div class="reply-likes">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
-                        </svg>
-                        <span class="like-count">8</span> 人赞了这个回复
-                    </div>
-                </div>
-            </div>
-
         </div>
     </div>
 
@@ -623,5 +526,26 @@ engine = create_engine(
     // 替换换行
     content = content.replace(/\n/g, '<br>');
     questioncontent.innerHTML = content;
+
+    function timeSince(data){
+        const now=new Date();
+        const past=new Date(data);
+        const diff=(now-past)/1000;
+        if(diff<60) return '刚刚';
+        else if(diff<3600) return Math.floor(diff/60)+'分钟前';
+        else if(diff<86400) return Math.floor(diff/3600)+'小时前';
+        else if(diff<2592000) return Math.floor(diff/86400)+'天前';
+        else return past.toLocaleDateString();
+    }
+
+    document.querySelectorAll('.reply-time').forEach(el=>{
+        const timeStr=el.getAttribute('data-time');
+        el.innerText=timeSince(timeStr);
+    })
+
+    document.querySelectorAll('.post-time').forEach(el=>{
+        const timeStr=el.getAttribute('data-time');
+        el.innerText=timeSince(timeStr);
+    })
 </script>
 {% endblock %}

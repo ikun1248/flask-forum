@@ -336,58 +336,15 @@
                         <a href="{{url_for('qa.qa_detail',qa_id=question.id)}}" class="thread-title">{{question.title}}</a>
                         <div class="thread-meta">
                             <a href="#">{{question.author.username}}</a>
-                            • 2小时前
+                            <div class="post-time" data-time="{{question.create_time}}"></div>
                         </div>
                     </div>
                     <div class="thread-stats">
-                        <span class="thread-replies">42</span>
+                        <span class="thread-replies">{{question.answers|length}}</span>
                         <span>回复</span>
                     </div>
                 </li>
                 {% endfor %}
-
-                <li class="thread-item">
-                    <div class="thread-avatar">用户</div>
-                    <div class="thread-content">
-                        <a href="#" class="thread-title">Flask项目部署的最佳实践有哪些？</a>
-                        <div class="thread-meta">
-                            <a href="#">用户名</a> • 2小时前
-                        </div>
-                    </div>
-                    <div class="thread-stats">
-                        <span class="thread-replies">42</span>
-                        <span>回复</span>
-                    </div>
-                </li>
-
-                <li class="thread-item">
-                    <div class="thread-avatar">用户</div>
-                    <div class="thread-content">
-                        <a href="#" class="thread-title">Python异步编程在Web开发中的应用</a>
-                        <div class="thread-meta">
-                            <a href="#">用户名</a> • 5小时前
-                        </div>
-                    </div>
-                    <div class="thread-stats">
-                        <span class="thread-replies">28</span>
-                        <span>回复</span>
-                    </div>
-                </li>
-
-                <li class="thread-item">
-                    <div class="thread-avatar">用户</div>
-                    <div class="thread-content">
-                        <a href="#" class="thread-title">前端框架选择：Vue vs React vs Angular</a>
-                        <div class="thread-meta">
-                            <a href="#">用户名</a> • 昨天
-                        </div>
-                    </div>
-                    <div class="thread-stats">
-                        <span class="thread-replies">156</span>
-                        <span>回复</span>
-                    </div>
-                </li>
-
                 <!-- 更多帖子项 -->
             </ul>
 
@@ -411,15 +368,15 @@
                 <div class="sidebar-content">
                     <div class="stats-grid">
                         <div class="stat-item">
-                            <div class="stat-value">1,243</div>
+                            <div class="stat-value">{{questions_count}}</div>
                             <div class="stat-label">主题</div>
                         </div>
                         <div class="stat-item">
-                            <div class="stat-value">5,872</div>
+                            <div class="stat-value">{{answers_count}}</div>
                             <div class="stat-label">回复</div>
                         </div>
                         <div class="stat-item">
-                            <div class="stat-value">893</div>
+                            <div class="stat-value">{{users_count}}</div>
                             <div class="stat-label">用户</div>
                         </div>
                         <div class="stat-item">
@@ -499,4 +456,22 @@
             </div>
         </div>
     </div>
+
+<script>
+    function timeSince(data){
+        const now=new Date();
+        const past=new Date(data);
+        const diff=(now-past)/1000;
+        if(diff<60) return '刚刚';
+        else if(diff<3600) return Math.floor(diff/60)+'分钟前';
+        else if(diff<86400) return Math.floor(diff/3600)+'小时前';
+        else if(diff<2592000) return Math.floor(diff/86400)+'天前';
+        else return past.toLocaleDateString();
+    }
+
+    document.querySelectorAll('.post-time').forEach(el=>{
+        const timeStr=el.getAttribute('data-time');
+        el.innerText=timeSince(timeStr);
+    })
+</script>
 {% endblock %}

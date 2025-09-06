@@ -11,7 +11,11 @@ bp = Blueprint('qa', __name__, url_prefix='/')
 @bp.route('/')
 def index():
     questions = QuestionModel.query.order_by(QuestionModel.create_time.desc()).all()
-    return render_template('index.html', questions=questions)
+    questions_count=db.session.query(QuestionModel).count()
+    answers_count=db.session.query(AnswerModel).count()
+    users_count=db.session.query(UserModel).count()
+    return render_template('index.html', questions=questions,questions_count=questions_count,answers_count=answers_count,users_count=users_count)
+
 
 
 @bp.route('/qa/public', methods=['GET', 'POST'])
