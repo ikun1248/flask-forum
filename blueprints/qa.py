@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, g,flash
+from flask import Blueprint, render_template, request, redirect, url_for, g,flash,jsonify
 from .forms import QuestionForm, AnswerForm
 from models import QuestionModel, AnswerModel,UserModel
 from sqlalchemy import or_
@@ -31,12 +31,10 @@ def qa_public():
             question = QuestionModel(title=title, content=content, author=g.user)
             db.session.add(question)
             db.session.commit()
-            return redirect('/')
+            return jsonify({'success':True,'message':'帖子发送成功'})
         else:
             for field,errors in form.errors.items():
-                flash(errors[0])
-                break
-            return redirect(url_for('qa.qa_public'))
+                return jsonify({'success':False,'message':errors[0]})
 
 
 @bp.route('/qa/detail/<qa_id>')
@@ -57,10 +55,9 @@ def answer_public():
         answer = AnswerModel(content=content, question_id=question_id, author=g.user)
         db.session.add(answer)
         db.session.commit()
-        return redirect(url_for('qa.qa_detail', qa_id=question_id))
+        return jsonify({'success':True,'message':'回复发送成功'})
     else:
-        flash(form.content.errors[0])
-        return redirect(url_for('qa.qa_detail', qa_id=request.form.get('question_id')))
+        return jsonify({'success':False,'message':form.content.errors[0]})
 
 
 @bp.route('search')
@@ -75,3 +72,43 @@ def search():
     else:
         flash("未找到相关帖子")
         return redirect('/')
+
+@bp.post('/qa/delete/<qa_id>')
+@login_required
+def qa_delete(qa_id):
+    question=QuestionModel.query.get(qa_id)
+    if not question:
+        return jsonify({'success':False,'message':'帖子不存在'})
+    if question.author_id!=g.user.id:
+        return jsonify({'success':False,'message':'没有权限删除此帖子'})
+
+    db.session.delete(question)
+    db.session.commit()
+    return jsonify({'success':True,'message':'删除成功'})
+
+@bp.route('/qa/edit/<qa_id>',methods=['GET','POST'])
+@login_required
+def qa_edit(qa_id):
+    question = QuestionModel.query.get(qa_id)
+    if g.user == question.author:
+        if request.method=='GET':
+            return render_template('edit_question.html',question=question)
+        else:
+            form=QuestionForm(request.form)
+            if form.validate():
+                title=form.title.data
+                content=form.content.data
+                question.title=title
+                question.content=content
+                db.session.commit()
+                return jsonify({'success':True,'message':'修改成功!'})
+            else:
+                for field,errors in form.errors.items():
+                    return jsonify({'success':False,'message':errors[0]})
+                    break
+    else:
+        return redirect('/');
+
+
+
+

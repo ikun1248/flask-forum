@@ -149,6 +149,28 @@
                 padding: 20px;
             }
         }
+        .toast {
+            position: fixed;
+            top: 20px; /* 距离顶部20px */
+            left: 50%; /* 水平居中基准点 */
+            transform: translateX(-50%); /* 水平方向精确居中（抵消自身宽度的一半） */
+            padding: 12px 20px;
+            border-radius: 6px;
+            color: white;
+            font-size: 14px;
+            z-index: 9999; /* 确保在最上层 */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            min-width: 200px; /* 可选：固定最小宽度，避免内容过短导致偏窄 */
+            text-align: center; /* 文字居中 */
+        }
+
+        .toast-success {
+            background: #4a6bdf;
+        }
+
+        .toast-error {
+            background: #e74c3c;
+        }
     </style>
 </head>
 <body>
@@ -158,7 +180,8 @@
             <p>登录您的论坛账户参与讨论</p>
         </div>
 
-        <form class="login-form"method="POST">
+        <form class="login-form" id="login-form">
+            <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
             <div class="form-group">
                 <label for="username">用户名或邮箱</label>
                 <input type="text" class="form-control" id="username" name="username" placeholder="请输入用户名或邮箱" required>
@@ -186,4 +209,40 @@
         </div>
     </div>
 </body>
+<script>
+    loginForm=document.getElementById('login-form');
+    loginForm.addEventListener('submit',async function(e){
+        e.preventDefault();
+        const formData=new FormData(this);
+        try{
+            const response=await fetch("{{url_for('auth.login')}}",{
+                method:'POST',
+                body:formData,
+                credentials:'same-origin'
+            })
+            const result=await response.json();
+            if(result.success){
+                showMessage(result.message);
+                setTimeout(()=>{
+                     window.location.href='/';
+                },1000)
+            }else{
+                showMessage('登录失败:'+result.message,false);
+            }
+        }catch(error){
+            console.error(error);
+            showMessage('网络错误,提交失败',false)
+        }
+    })
+    function showMessage(message,isSuccess=true){
+        const toast=document.createElement('div');
+        toast.className=`toast ${isSuccess? 'toast-success':'toast-error'}`;
+        toast.textContent=message;
+
+        document.body.appendChild(toast);
+        setTimeout(() => {
+            toast.remove();
+        }, 3000);
+    }
+</script>
 </html>

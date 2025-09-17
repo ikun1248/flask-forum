@@ -20,15 +20,13 @@ def login():
             UserModel.email==username,UserModel.username==username)
         ).first()
         if not user:
-            flash("用户名或邮箱不存在")
-            return redirect(url_for('auth.login'))
+            return jsonify({'success':False,'message':'用户名或邮箱不存在'})
         else:
             if check_password_hash(user.password,password):
                 session['user_id']=user.id
-                return redirect('/')
+                return jsonify({'success':True,'message':'登录成功!'})
             else:
-                flash("密码错误")
-                return redirect(url_for('auth.login'))
+                return jsonify({'success':False,'message':'密码错误'})
 
 @bp.route('/logout')
 def logout():
@@ -61,18 +59,18 @@ def register():
             email=form.email.data
             username=form.username.data
             password=form.password.data
+            captcha=form.captcha.data
             user=UserModel(email=email,username=username,password=generate_password_hash(password))
             db.session.add(user)
             db.session.commit()
             user.nickname=generate_default_nickname(user.id)
+            captcha_model = EmailCaptchaModel.query.filter_by(email=email, captcha=captcha).first()
+            db.session.delete(captcha_model)
             db.session.commit()
-            flash('注册成功！请登录~')
-            return redirect(url_for('auth.login'))
+            return jsonify({'success':True,'message':'注册成功！请登录~'})
         else:
             for field, errors in form.errors.items():
-                flash(errors[0])
-                break
-            return render_template('register.html')
+                return jsonify({'success':False,'message':errors[0]})
 
 @bp.route('/captcha/email')
 def captcha_email():
@@ -87,9 +85,9 @@ def captcha_email():
         email_captcha=EmailCaptchaModel(email=email,captcha=captcha)
         db.session.add(email_captcha)
         db.session.commit()
-        return jsonify({'code':200,'message':'','data':None})
+        return jsonify({'success':True,'message':'邮箱验证码发送成功'})
     else:
-        return jsonify({'code':400,'message':str(form.email.errors[0]),'data':None})
+        return jsonify({'success':False,'message':str(form.email.errors[0])})
 
 
 @bp.route('/mail/test')

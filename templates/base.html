@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{csrf_token()}}">
     <script src="{{url_for('static',filename='/jquery/jquery.3.6.min.js')}}"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <title>{% block title %}{% endblock %}</title>
@@ -161,6 +162,28 @@
                 font-size: 18px;
             }
         }
+        .toast {
+            position: fixed;
+            top: 20px; /* 距离顶部20px */
+            left: 50%; /* 水平居中基准点 */
+            transform: translateX(-50%); /* 水平方向精确居中（抵消自身宽度的一半） */
+            padding: 12px 20px;
+            border-radius: 6px;
+            color: white;
+            font-size: 14px;
+            z-index: 9999; /* 确保在最上层 */
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            min-width: 200px; /* 可选：固定最小宽度，避免内容过短导致偏窄 */
+            text-align: center; /* 文字居中 */
+        }
+
+        .toast-success {
+            background: #4a6bdf;
+        }
+
+        .toast-error {
+            background: #e74c3c;
+        }
         {% block style %} {% endblock %}
     </style>
 </head>
@@ -215,5 +238,20 @@
     </div>
 </nav>
 {% block body %} {% endblock %}
+<script>
+    function getCSRFToken(){
+        return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    }
+     function showMessage(message,isSuccess=true){
+        const toast=document.createElement('div');
+        toast.className=`toast ${isSuccess? 'toast-success':'toast-error'}`;
+        toast.textContent=message;
+
+        document.body.appendChild(toast);
+        setTimeout(() => {
+            toast.remove();
+        }, 3000);
+    }
+</script>
 </body>
 </html>

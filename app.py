@@ -6,12 +6,15 @@ from blueprints.auth import bp as auth_bp
 from blueprints.qa import bp as qa_bp
 from blueprints.profile import bp as profile_bp
 from flask_migrate import Migrate
+from flask_wtf.csrf import CSRFProtect
 
 app=Flask(__name__)
 app.config.from_object(config)
 db.init_app(app)
 mail.init_app(app)
 migrate=Migrate(app,db)
+csrf=CSRFProtect(app)
+csrf.init_app(app)
 
 app.register_blueprint(auth_bp)
 app.register_blueprint(qa_bp)

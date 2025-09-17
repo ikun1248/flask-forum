@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% block title %}发布新帖 - 论坛社区{% endblock %}
+{% block title %}编辑帖子 - 论坛社区{% endblock %}
 {% block style %}
         /* 主内容区样式 */
         .container {
@@ -287,22 +287,21 @@
     <div class="container">
         <!-- 面包屑导航 -->
         <div class="breadcrumb">
-            <a href="#">首页</a>
+            <a href="/">首页</a>
             <span>/</span>
-            <span>发布新帖</span>
+            <span>编辑帖子</span>
         </div>
 
-        <!-- 发帖表单 -->
         <div class="post-form-container">
             <div class="form-header">
-                <h2 class="form-title">发布新帖子</h2>
+                <h2 class="form-title">编辑帖子</h2>
             </div>
 
-            <form id="public-form">
+            <form id='edit-form'>
                 <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
                 <div class="form-group">
                     <label for="post-title" class="form-label">标题</label>
-                    <input type="text" class="form-control" id="post-title" name="title" placeholder="请输入帖子标题" required>
+                    <input type="text" class="form-control" id="post-title" name="title" placeholder="请输入帖子标题" value="{{question.title}}" required>
                     <div class="form-hint">清晰明确的标题能获得更多关注</div>
                 </div>
 
@@ -334,7 +333,7 @@
                         <button type="button" class="toolbar-btn preview-toggle">预览</button>
                     </div>
 
-                    <textarea class="form-control" id="post-content" name="content" placeholder="请输入帖子内容，支持Markdown格式" required></textarea>
+                    <textarea class="form-control" id="post-content" name="content" placeholder="请输入帖子内容，支持Markdown格式" value="" required>{{question.content}}</textarea>
                     <div class="form-hint">支持Markdown语法，点击上方按钮快速插入格式</div>
 
                     <!-- 预览区域 -->
@@ -353,10 +352,10 @@
                 </div>
 
                 <div class="form-actions">
-                    <a href="/">
+                    <a href="{{url_for('qa.qa_detail',qa_id=question.id)}}">
                         <button type="button" class="btn-cancel">取消</button>
                     </a>
-                    <button type="submit" class="btn-submit">发布帖子</button>
+                    <button type="submit" class="btn-submit">确认修改</button>
                 </div>
             </form>
         </div>
@@ -460,7 +459,6 @@
             // 标签输入功能
             const tagInput = document.getElementById('tag-input');
             const tagContainer = document.getElementById('tag-container');
-
             tagInput.addEventListener('keydown', function(e) {
                 if (e.key === 'Enter' || e.key === ',') {
                     e.preventDefault();
@@ -468,17 +466,14 @@
                     this.value = '';
                 }
             });
-
             tagInput.addEventListener('blur', function() {
                 if (this.value.trim() !== '') {
                     addTag(this.value.trim());
                     this.value = '';
                 }
             });
-
             function addTag(tagText) {
                 if (tagText === '') return;
-
                 const tag = document.createElement('div');
                 tag.className = 'tag';
                 tag.innerHTML = `
@@ -489,31 +484,35 @@
 
                 tagContainer.appendChild(tag);
             }
-            const publicForm=document.getElementById('public-form');
-            publicForm.addEventListener('submit',async function(e){
-                e.preventDefault();
-                const formData=new FormData(this);
-                try{
-                    const response=await fetch("{{url_for('qa.qa_public')}}",{
-                        method:'POST',
-                        body:formData,
-                        credentials:'same-origin'
-                    });
-                    const result=await response.json();
-                    if(result.success){
-                        showMessage(result.message);
-                        setTimeout(()=>{
-                            window.location.href='/';
-                        },1000)
-                    }else{
-                        showMessage('帖子发送失败:'+result.message,false);
-                    }
-                }catch(error)
-                {
-                    console.error('请求失败:',error);
-                    showMessage('网络错误,提交失败',false);
-                }
-            });
         });
+
+       document.addEventListener('DOMContentLoaded',function(){
+           const editForm=document.getElementById('edit-form');
+           editForm.addEventListener('submit',async function(e){
+               e.preventDefault();
+               const formData=new FormData(this);
+               formData.append('qa_id',{{question.id}});
+               try{
+                   const response=await fetch('{{url_for('qa.qa_edit',qa_id=question.id)}}',{
+                       method:'POST',
+                       body:formData,
+                       credentials:'same-origin'
+                   });
+                   const result=await response.json();
+                   if(result.success){
+                       showMessage(result.message);
+                       setTimeout(()=>{
+                           window.location.href=("{{url_for('qa.qa_detail',qa_id=question.id)}}");
+                       },1000)
+                   }else{
+                       showMessage('编辑失败:'+result.message,false);
+                   }
+               }catch(error){
+                   console.error('请求失败:',error);
+                   showMessage('网络错误,提交失败',false)
+               }
+           });
+       })
+
     </script>
 {% endblock %}

@@ -6,3 +6,5 @@ Flask-Migrate
 WTForms
 Werkzeug
 SQLAlchemy
+email_validator
+pymysql

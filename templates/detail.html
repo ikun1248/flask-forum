@@ -53,6 +53,7 @@
             line-height: 1.4;
         }
 
+
         .post-meta {
             display: flex;
             align-items: center;
@@ -159,6 +160,150 @@
             border-radius: 12px;
             font-size: 12px;
             font-weight: 500;
+        }
+
+        .btn-edit {
+            background: #4a6bdf;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-edit:hover {
+            background: #3a5bc7;
+        }
+
+        .btn-edit-small {
+            background: #4a6bdf;
+            color: white;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-edit-small:hover {
+            background: #3a5bc7;
+        }
+
+        .btn-delete {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-delete:hover {
+            background: #c0392b;
+        }
+
+        .btn-delete-small {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-delete-small:hover {
+            background: #c0392b;
+        }
+
+        .delete-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .delete-modal-content {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            width: 400px;
+            max-width: 90%;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .delete-modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .delete-modal-message {
+            color: #666;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        .delete-modal-actions {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .btn-cancel-delete {
+            background: #f5f7fa;
+            border: 1px solid #ddd;
+            color: #555;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-cancel-delete:hover {
+            background: #e9ecf1;
+        }
+
+        .btn-confirm-delete {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 15px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .btn-confirm-delete:hover {
+            background: #c0392b;
         }
 
         /* 回复区域 */
@@ -395,6 +540,17 @@
             <span>{{question.title}}</span>
         </div>
 
+        <div class="delete-modal" id="deleteModal">
+            <div class="delete-modal-content">
+                <h3 class="delete-modal-title">确认删除</h3>
+                <p class="delete-modal-message" id="deleteModalMessage">您确定要删除吗？此操作不可撤销。</p>
+                <div class="delete-modal-actions">
+                    <button class="btn-cancel-delete" onclick="closeDeleteModal()">取消</button>
+                    <button class="btn-confirm-delete" onclick="deletePost('{{ url_for('qa.qa_delete', qa_id=question.id) }}')">确认删除</button>
+                </div>
+            </div>
+        </div>
+
         <!-- 帖子内容 -->
         <div class="post-container">
             <div class="post-header">
@@ -406,8 +562,21 @@
                     </div>
                     <div class="post-time" data-time="{{question.create_time}}"></div>
                     <div class="post-views">浏览 342 次</div>
+                    {% if user==question.author %}
+                    <div class="post-actions">
+                        <a href="{{url_for('qa.qa_edit',qa_id=question.id)}}">
+                            <button class="btn-edit">
+                                <i class="fas fa-edit"></i> 编辑
+                            </button>
+                        </a>
+                        <button class="btn-delete" onclick="confirmDelete('{{question.id}}')">
+                            <i class="fas fa-trash-alt"></i> 删除
+                        </button>
+                    </div>
+                    {% endif %}
                 </div>
             </div>
+
 
             <div class="post-content" id="question-content"></div>
 
@@ -452,7 +621,8 @@
         </div>
 
         <!-- 回复表单 -->
-        <form class="reply-form" action="{{url_for('qa.answer_public')}}" method='POST'>
+        <form class="reply-form" id="reply-form">
+            <input type="hidden" name="csrf_token" value="{{csrf_token()}}">
             <input type="hidden" name="question_id" value="{{question.id}}">
             <div class="form-group">
                 <label for="reply-content" class="form-label">发表回复</label>
@@ -546,6 +716,96 @@
     document.querySelectorAll('.post-time').forEach(el=>{
         const timeStr=el.getAttribute('data-time');
         el.innerText=timeSince(timeStr);
+    })
+
+    let postToDelete = null;
+
+    // 打开删除确认模态框
+    function confirmDelete(postId) {
+        postToDelete = postId;
+        const modal = document.getElementById('deleteModal');
+        modal.style.display = 'flex';
+    }
+
+    // 关闭删除确认模态框
+    function closeDeleteModal() {
+        const modal = document.getElementById('deleteModal');
+        modal.style.display = 'none';
+        postToDelete = null;
+    }
+
+    // 执行删除操作
+    function deletePost(url) {
+        if (!postToDelete) return;
+        fetch(url,{
+            method:'POST',
+            headers:{
+                'Content-Type':'application/json',
+                'X-CSRF-Token':getCSRFToken()
+            },
+            credentials:'same-origin'
+        })
+        .then(response=>{
+            if(!response.ok){
+                throw new Error("删除失败,可能没有权限或帖子不存在")
+            }
+            return response.json();
+        })
+        .then(data=>{
+            if(data.success){
+                showMessage(data.message);
+                closeDeleteModal();
+                setTimeout(()=>{
+                    window.location.href='/';
+                },1000)
+            }
+            else showMessage('删除失败:'+data.message);
+
+        })
+        .catch(error=>{
+            showMessage('操作失败:'+error.message);
+        })
+    }
+
+    // 点击模态框外部关闭
+    document.getElementById('deleteModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeDeleteModal();
+        }
+    });
+
+    // 按ESC键关闭模态框
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeDeleteModal();
+        }
+    });
+
+    document.addEventListener('DOMContentLoaded',function(){
+        const replyForm=document.getElementById('reply-form');
+        replyForm.addEventListener('submit',async function(e){
+            e.preventDefault();
+            const formData=new FormData(this);
+            try{
+                const response=await fetch("{{url_for('qa.answer_public')}}",{
+                    method:'POST',
+                    body:formData,
+                    credentials:'same-origin'
+                });
+                const result=await response.json();
+                if (result.success){
+                    showMessage(result.message);
+                    setTimeout(()=>{
+                        location.reload();
+                    },1000)
+                }else{
+                    showMessage('回复失败:'+result.message,false);
+                }
+            }catch(error){
+                console.error('请求失败:',error);
+                showMessage('网络错误,提交失败',false)
+            }
+        })
     })
 </script>
 {% endblock %}

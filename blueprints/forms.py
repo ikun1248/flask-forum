@@ -1,6 +1,6 @@
 import wtforms
 from flask import g
-from wtforms.validators import Email,Length,EqualTo,InputRequired
+from wtforms.validators import Email,Length,EqualTo,InputRequired,Regexp
 from models import UserModel,EmailCaptchaModel
 from flask_wtf.file import FileAllowed, FileRequired, FileField,FileSize
 
@@ -19,8 +19,14 @@ class EmailForm(wtforms.Form):
 class RegisterForm(wtforms.Form):
     email=wtforms.StringField(validators=[Email(message='邮箱格式错误')])
     captcha=wtforms.StringField(validators=[])
-    username=wtforms.StringField(validators=[Length(min=6,max=20,message='用户名格式错误')])
-    password=wtforms.StringField(validators=[Length(min=6,max=20,message='密码格式错误')])
+    username = wtforms.StringField(validators=[
+        Length(min=4, max=12, message='用户名长度为4-12位'),
+        Regexp(
+            regex=r'^[A-Za-z0-9]+$',
+            message='用户名只能包含英文和数字'
+        )
+    ])
+    password=wtforms.StringField(validators=[Length(min=6,max=20,message='密码长度为6-20位')])
     password_confirm=wtforms.StringField(validators=[EqualTo('password',message='两个密码不一致')])
 
     def validate_email(self,field):
@@ -41,9 +47,6 @@ class RegisterForm(wtforms.Form):
         captcha_model=EmailCaptchaModel.query.filter_by(email=email,captcha=captcha).first()
         if not captcha_model:
             raise wtforms.ValidationError('验证码错误')
-        else:
-            db.session.delete(captcha_model)
-            db.session.commit()
 
 class QuestionForm(wtforms.Form):
     title=wtforms.StringField(validators=[Length(min=3,max=100,message='标题格式错误,输入范围在3-100')])
