@@ -2,7 +2,7 @@ SECRET_KEY='sjfsjf;sfljsjfslfsfjs'
 
 HOSTNAME='127.0.0.1'
 PORT=3306
-DATABASE='王座论坛'
+DATABASE='flask_forum'
 USERNAME='root'
 PASSWORD='666666'
 DB_URI=f'mysql+pymysql://{USERNAME}:{PASSWORD}@{HOSTNAME}:{PORT}/{DATABASE}'
