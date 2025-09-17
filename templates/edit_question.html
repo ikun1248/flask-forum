@@ -309,12 +309,12 @@
                     <label for="post-category" class="form-label">分类</label>
                     <select class="form-control" id="post-category" name="category" required>
                         <option value="">请选择分类</option>
-                        <option value="python">Python开发</option>
-                        <option value="frontend">前端技术</option>
-                        <option value="database">数据库</option>
-                        <option value="devops">服务器运维</option>
-                        <option value="qna">问答求助</option>
-                        <option value="share">技术分享</option>
+                        <option value="后端开发" {% if question.category == '后端开发' %} selected {% endif %}>后端开发</option>
+                        <option value="前端技术" {% if question.category == '前端技术' %} selected {% endif %}>前端技术</option>
+                        <option value="数据库" {% if question.category == '数据库' %} selected {% endif %}>数据库</option>
+                        <option value="服务器运维" {% if question.category == '服务器运维' %} selected {% endif %}>服务器运维</option>
+                        <option value="问答求助" {% if question.category == '问答求助' %} selected {% endif %}>问答求助</option>
+                        <option value="技术分享" {% if question.category == '技术分享' %} selected {% endif %}>技术分享</option>
                     </select>
                 </div>
 
@@ -345,7 +345,7 @@
                 <div class="form-group">
                     <label class="form-label">标签</label>
                     <div class="tag-input-container" id="tag-container">
-                        <!-- 已添加的标签会显示在这里 -->
+
                     </div>
                     <input type="text" class="tag-input" id="tag-input" placeholder="输入标签后按回车添加">
                     <div class="form-hint">添加相关标签，多个标签用逗号或回车分隔</div>
@@ -457,62 +457,112 @@
             });
 
             // 标签输入功能
+
+            // 先判断是否为有效数组，避免报错（比如 tag_list 为 None 时）
+
+
             const tagInput = document.getElementById('tag-input');
             const tagContainer = document.getElementById('tag-container');
+
+            // 初始化已有标签
+            const existingTags = {{ question.tag_list | tojson }};
+            if (Array.isArray(existingTags)) {
+                existingTags.forEach(tag => addTag(tag));
+            }
+
+            // 按回车或逗号添加标签
             tagInput.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter' || e.key === ',') {
+                if (e.key === 'Enter') {
                     e.preventDefault();
-                    addTag(this.value.trim());
+                    let tagValue = this.value.trim();
+                    if (tagValue !== '') {
+                        addTag(tagValue);
+                        this.value = '';
+                    }
+                }
+            });
+
+            tagInput.addEventListener('keyup', function(e) {
+                if (e.key === 'Enter' || e.key === ',' || e.key === '，') {
+                    e.preventDefault();
+                    let tagValue = this.value.trim();
+                    if (tagValue.endsWith(',') || tagValue.endsWith('，')) {
+                        tagValue = tagValue.slice(0, -1).trim();
+                    }
+                    if(tagValue) addTag(tagValue);
                     this.value = '';
                 }
             });
+
             tagInput.addEventListener('blur', function() {
                 if (this.value.trim() !== '') {
                     addTag(this.value.trim());
                     this.value = '';
                 }
             });
+
+            // 添加标签函数
             function addTag(tagText) {
                 if (tagText === '') return;
+                // 检查重复
+                const existing = Array.from(tagContainer.querySelectorAll('.tag')).map(t => t.firstChild.textContent.trim());
+                if (existing.includes(tagText)) return;
+                // 限制最多5个标签
+                const currentCount = tagContainer.querySelectorAll('.tag').length;
+                if (currentCount >= 5) {
+                    showMessage('最多添加5个标签', false);
+                    return;
+                }
                 const tag = document.createElement('div');
                 tag.className = 'tag';
                 tag.innerHTML = `
                     ${tagText}
-                    <span class="tag-remove" onclick="this.parentElement.remove()">×</span>
-                    <input type="hidden" name="tags" value="${tagText}">
+                    <span class="tag-remove">×</span>
+                    <input type="hidden" value="${tagText}">
                 `;
-
+                // 删除按钮绑定事件
+                tag.querySelector('.tag-remove').addEventListener('click', function() {
+                    this.parentElement.remove();
+                    updateTagIndexes();
+                });
                 tagContainer.appendChild(tag);
+                updateTagIndexes();
+            }
+
+            // 更新 hidden input 的 name 顺序
+            function updateTagIndexes() {
+                const hiddenInputs = tagContainer.querySelectorAll('input[type="hidden"]');
+                hiddenInputs.forEach((input, i) => {
+                    input.name = `tags-${i}`;
+                });
             }
         });
 
-       document.addEventListener('DOMContentLoaded',function(){
-           const editForm=document.getElementById('edit-form');
-           editForm.addEventListener('submit',async function(e){
-               e.preventDefault();
-               const formData=new FormData(this);
-               formData.append('qa_id',{{question.id}});
-               try{
-                   const response=await fetch('{{url_for('qa.qa_edit',qa_id=question.id)}}',{
-                       method:'POST',
-                       body:formData,
-                       credentials:'same-origin'
-                   });
-                   const result=await response.json();
-                   if(result.success){
-                       showMessage(result.message);
-                       setTimeout(()=>{
-                           window.location.href=("{{url_for('qa.qa_detail',qa_id=question.id)}}");
-                       },1000)
-                   }else{
-                       showMessage('编辑失败:'+result.message,false);
-                   }
-               }catch(error){
-                   console.error('请求失败:',error);
-                   showMessage('网络错误,提交失败',false)
+       const editForm=document.getElementById('edit-form');
+       editForm.addEventListener('submit',async function(e){
+           e.preventDefault();
+           const formData=new FormData(this);
+           formData.append('qa_id',{{question.id}});
+           try{
+               const response=await fetch('{{url_for('qa.qa_edit',qa_id=question.id)}}',{
+                   method:'POST',
+                   body:formData,
+                   credentials:'same-origin'
+               });
+               const result=await response.json();
+               if(result.success){
+                   showMessage(result.message);
+                   setTimeout(()=>{
+                       window.location.href=("{{url_for('qa.qa_detail',qa_id=question.id)}}");
+                   },1000)
+               }else{
+                   showMessage('编辑失败:'+result.message,false);
                }
-           });
-       })
+           }catch(error){
+               console.error('请求失败:',error);
+               showMessage('网络错误,提交失败',false)
+           }
+       });
 
     </script>
 {% endblock %}

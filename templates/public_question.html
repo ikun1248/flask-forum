@@ -287,7 +287,7 @@
     <div class="container">
         <!-- 面包屑导航 -->
         <div class="breadcrumb">
-            <a href="#">首页</a>
+            <a href="/">首页</a>
             <span>/</span>
             <span>发布新帖</span>
         </div>
@@ -310,12 +310,12 @@
                     <label for="post-category" class="form-label">分类</label>
                     <select class="form-control" id="post-category" name="category" required>
                         <option value="">请选择分类</option>
-                        <option value="python">Python开发</option>
-                        <option value="frontend">前端技术</option>
-                        <option value="database">数据库</option>
-                        <option value="devops">服务器运维</option>
-                        <option value="qna">问答求助</option>
-                        <option value="share">技术分享</option>
+                        <option value="后端开发">后端开发</option>
+                        <option value="前端技术">前端技术</option>
+                        <option value="数据库">数据库</option>
+                        <option value="服务器运维">服务器运维</option>
+                        <option value="问答求助">问答求助</option>
+                        <option value="技术分享">技术分享</option>
                     </select>
                 </div>
 
@@ -462,9 +462,24 @@
             const tagContainer = document.getElementById('tag-container');
 
             tagInput.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter' || e.key === ',') {
+                if (e.key === 'Enter') {
+                    e.preventDefault();  // 阻止表单提交
+                    let tagValue = this.value.trim();
+                    if (tagValue !== '') {
+                        addTag(tagValue);
+                        this.value = '';
+                    }
+                }
+            });
+
+            tagInput.addEventListener('keyup', function(e) {
+                if (e.key === 'Enter' || e.key === ',' || e.key === '，') {
                     e.preventDefault();
-                    addTag(this.value.trim());
+                    let tagValue=this.value.trim();
+                    if (tagValue.endsWith(',') || tagValue.endsWith('，')) {
+                    tagValue = tagValue.slice(0, -1).trim();
+                }
+                    addTag(tagValue);
                     this.value = '';
                 }
             });
@@ -478,16 +493,37 @@
 
             function addTag(tagText) {
                 if (tagText === '') return;
-
+                // 检查重复
+                const existing = Array.from(tagContainer.querySelectorAll('.tag')).map(t => t.firstChild.textContent.trim());
+                if (existing.includes(tagText)) return;
+                // 限制最多5个标签
+                const currentCount = tagContainer.querySelectorAll('.tag').length;
+                if (currentCount >= 5) {
+                    showMessage('最多添加5个标签', false);
+                    return;
+                }
                 const tag = document.createElement('div');
                 tag.className = 'tag';
                 tag.innerHTML = `
                     ${tagText}
-                    <span class="tag-remove" onclick="this.parentElement.remove()">×</span>
-                    <input type="hidden" name="tags" value="${tagText}">
+                    <span class="tag-remove">×</span>
+                    <input type="hidden" value="${tagText}">
                 `;
-
+                // 删除按钮绑定事件
+                tag.querySelector('.tag-remove').addEventListener('click', function() {
+                    this.parentElement.remove();
+                    updateTagIndexes();
+                });
                 tagContainer.appendChild(tag);
+                updateTagIndexes();
+            }
+
+            // 更新 hidden input 的 name 顺序
+            function updateTagIndexes() {
+                const hiddenInputs = tagContainer.querySelectorAll('input[type="hidden"]');
+                hiddenInputs.forEach((input, i) => {
+                    input.name = `tags-${i}`;
+                });
             }
             const publicForm=document.getElementById('public-form');
             publicForm.addEventListener('submit',async function(e){

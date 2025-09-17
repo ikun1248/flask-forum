@@ -25,10 +25,16 @@ class QuestionModel(db.Model):
     id=db.Column(db.Integer,primary_key=True,autoincrement=True)
     title=db.Column(db.String(100),nullable=False)
     content=db.Column(db.Text,nullable=False)
+    category=db.Column(db.String(100),nullable=False)
+    tags=db.Column(db.String(100))
     create_time=db.Column(db.DateTime,default=datetime.now)
 
     author_id=db.Column(db.Integer,db.ForeignKey('user.id'))
     author=db.relationship(UserModel,backref='questions')
+
+    @property
+    def tag_list(self):
+        return self.tags.split(',') if self.tags else []
 
 class AnswerModel(db.Model):
     __tablename__='answer'

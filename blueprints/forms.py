@@ -51,6 +51,23 @@ class RegisterForm(wtforms.Form):
 class QuestionForm(wtforms.Form):
     title=wtforms.StringField(validators=[Length(min=3,max=100,message='标题格式错误,输入范围在3-100')])
     content=wtforms.StringField(validators=[Length(min=3,message='内容字数在3个字以上')])
+    category=wtforms.StringField(validators=[Length(min=1,message='请选择分类')])
+    tags=wtforms.FieldList(
+        wtforms.StringField(
+            validators=[Length(min=1,max=15,message='单个标签的长度最大为15')]
+        ),
+        min_entries=0,
+        max_entries=50,
+    )
+
+    def validate_tags(self,field):
+        tags=field.data
+        if len(tags)>5:
+            raise wtforms.ValidationError('最多添加5个标签')
+        if len(tags)!=len(set(tags)):
+            raise wtforms.ValidationError('标签不能重复')
+
+
 
 class AnswerForm(wtforms.Form):
     content=wtforms.StringField(validators=[Length(min=1,message='内容不能为空')])

@@ -535,7 +535,7 @@
         <div class="breadcrumb">
             <a href="/">首页</a>
             <span>/</span>
-            <a href="#">Python开发</a>
+            <a href="#">{{question.category}}</a>
             <span>/</span>
             <span>{{question.title}}</span>
         </div>
@@ -606,10 +606,9 @@
                 </div>
 
                 <div class="post-tags">
-                    <span class="tag">Flask</span>
-                    <span class="tag">部署</span>
-                    <span class="tag">Python</span>
-                    <span class="tag">最佳实践</span>
+                    {% for tag in question.tag_list %}
+                    <span class="tag">{{tag}}</span>
+                    {% endfor %}
                 </div>
             </div>
         </div>

@@ -28,7 +28,10 @@ def qa_public():
         if form.validate():
             title = form.title.data
             content = form.content.data
-            question = QuestionModel(title=title, content=content, author=g.user)
+            tags=form.tags.data
+            tags=','.join(tags)
+            category=form.category.data
+            question = QuestionModel(title=title, content=content, category=category,tags=tags,author=g.user)
             db.session.add(question)
             db.session.commit()
             return jsonify({'success':True,'message':'帖子发送成功'})
@@ -98,8 +101,13 @@ def qa_edit(qa_id):
             if form.validate():
                 title=form.title.data
                 content=form.content.data
+                category=form.category.data
+                tags=form.tags.data
+                tags=','.join(tags)
                 question.title=title
                 question.content=content
+                question.category=category
+                question.tags=tags
                 db.session.commit()
                 return jsonify({'success':True,'message':'修改成功!'})
             else:
