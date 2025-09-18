@@ -50,6 +50,7 @@ def qa_public():
 
 
 @bp.route('/qa/detail/<qa_id>')
+@login_required
 def qa_detail(qa_id):
     question = QuestionModel.query.get(qa_id)
     is_like=False
