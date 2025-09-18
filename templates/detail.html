@@ -486,6 +486,11 @@
             color: #e74c3c;
         }
 
+        .bookmark-count{
+            font-weight: 500;
+        }
+
+
         /* 响应式设计 */
         @media (max-width: 768px) {
             .search-input {
@@ -528,6 +533,51 @@
                 flex-wrap: wrap;
             }
         }
+/* --- 帖子点赞按钮美化和动画 --- */
+.action-btn.like {
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+.action-btn.like.active {
+    background: #ffece8;
+    border-color: #e74c3c;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(231, 76, 60, 0.25);
+}
+.action-btn.like:active { transform: translateY(0); }
+
+/* 点赞数变化动画 */
+.like-count { transition: transform 0.2s ease; }
+.like-count.bump { transform: scale(1.4); }
+
+/* 点击波纹效果 */
+.action-btn.like::after {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 0; height: 0;
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s ease-out, height 0.6s ease-out, opacity 0.6s ease-out;
+    opacity: 0;
+}
+.action-btn.like:active::after {
+    width: 200px; height: 200px; opacity: 1;
+}
+
+/* 飘心动画 */
+.like-animation {
+    position: absolute; font-size: 22px; color: #e74c3c;
+    pointer-events: none; z-index: 10;
+    animation: likeFly 0.8s ease-out forwards; opacity: 0;
+}
+@keyframes likeFly {
+    0% { transform: translate(-50%, 0) scale(0.6); opacity: 1; }
+    50% { transform: translate(-50%, -25px) scale(1.2); opacity: 1; }
+    100% { transform: translate(-50%, -50px) scale(0.5); opacity: 0; }
+}
 {% endblock %}
 {% block body %}
     <div class="container">
@@ -561,7 +611,7 @@
                         <a href="#" class="author-name">{{question.author.username}}</a>
                     </div>
                     <div class="post-time" data-time="{{question.create_time}}"></div>
-                    <div class="post-views">浏览 342 次</div>
+                    <div class="post-views">浏览 {{view_count}} 次</div>
                     {% if user==question.author %}
                     <div class="post-actions">
                         <a href="{{url_for('qa.qa_edit',qa_id=question.id)}}">
@@ -582,18 +632,19 @@
 
             <div class="post-footer">
                 <div class="post-actions">
-                    <button class="action-btn like">
+                    <button class="action-btn like {% if is_like %} active {% endif %}">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                         </svg>
                         <span>赞</span>
-                        <span class="like-count">42</span>
+                        <span class="like-count">{{like_count}}</span>
                     </button>
                     <button class="action-btn bookmark">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
                         </svg>
                         <span>收藏</span>
+                        <span class="bookmark-count">0</span>
                     </button>
                     <button class="action-btn">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -806,5 +857,72 @@
             }
         })
     })
+
+    // --- 帖子点赞功能
+    document.addEventListener('DOMContentLoaded', function() {
+        const likeButton = document.querySelector('.action-btn.like');
+        if (likeButton) {
+            likeButton.addEventListener('click', async function(e){
+                const button = e.currentTarget;
+                const wasActive = button.classList.contains('active');
+
+                try {
+                    const response = await fetch("{{url_for('qa.qa_like',qa_id=question.id)}}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCSRFToken()
+                        },
+                        credentials: 'same-origin'
+                    });
+
+                    const result = await response.json();
+                    if (result.success) {
+                        // 切换激活状态
+                        showMessage(result.message);
+                        button.classList.toggle('active');
+                        // 更新点赞数
+                        const countEl = button.querySelector('.like-count');
+                        if (countEl) {
+                            let currentCount = parseInt(countEl.textContent, 10);
+                            const newCount = button.classList.contains('active') ? currentCount + 1 : currentCount - 1;
+
+                            // 数字跳动动画
+                            countEl.classList.add('bump');
+                            setTimeout(() => {
+                                countEl.textContent = newCount;
+                                setTimeout(() => countEl.classList.remove('bump'), 200);
+                            }, 150);
+                        }
+                        // 飘心动画
+                        if (!wasActive) {
+                            createLikeAnimation(button);
+                        }
+                    } else {
+                        showMessage('点赞失败:' + result.message, false);
+                    }
+                }catch(error){
+                    showMessage(error.message,false);
+                }
+            });
+        }
+
+
+    function createLikeAnimation(button) {
+        const animationEl = document.createElement('span');
+        animationEl.innerHTML = '❤️';
+        animationEl.classList.add('like-animation');
+
+        const rect = button.getBoundingClientRect();
+        const top = rect.top + window.scrollY - 10;
+        const left = rect.left + window.scrollX + rect.width / 2;
+
+        animationEl.style.top = `${top}px`;
+        animationEl.style.left = `${left}px`;
+
+        document.body.appendChild(animationEl);
+        setTimeout(() => animationEl.remove(), 800);
+    }
+});
 </script>
 {% endblock %}

@@ -1,9 +1,10 @@
 from flask import Blueprint, render_template, request, redirect, url_for, g,flash,jsonify
 from .forms import QuestionForm, AnswerForm
-from models import QuestionModel, AnswerModel,UserModel
+from models import QuestionModel, AnswerModel,UserModel,LikeModel,ViewLogModel
 from sqlalchemy import or_
 from exts import db
 from .decorators import login_required
+from datetime import datetime
 
 bp = Blueprint('qa', __name__, url_prefix='/')
 
@@ -14,7 +15,15 @@ def index():
     questions_count=db.session.query(QuestionModel).count()
     answers_count=db.session.query(AnswerModel).count()
     users_count=db.session.query(UserModel).count()
-    return render_template('index.html', questions=questions,questions_count=questions_count,answers_count=answers_count,users_count=users_count)
+    category_counts=QuestionModel.get_all_category_counts()
+    return render_template(
+        'index.html',
+        questions=questions,
+        questions_count=questions_count,
+        answers_count=answers_count,
+        users_count=users_count,
+        category_counts=category_counts
+    )
 
 
 
@@ -43,8 +52,27 @@ def qa_public():
 @bp.route('/qa/detail/<qa_id>')
 def qa_detail(qa_id):
     question = QuestionModel.query.get(qa_id)
+    is_like=False
+    like=LikeModel.query.filter_by(user_id=g.user.id,question_id=qa_id,is_active=True).first()
+    like_count = LikeModel.query.filter_by(question_id=qa_id, is_active=True).count()
+    if like :
+        is_like=True
     if question:
-        return render_template('detail.html', question=question)
+        view_log=ViewLogModel.query.filter_by(user_id=g.user.id,question_id=qa_id).first()
+        if not view_log:
+            view_log=ViewLogModel(user_id=g.user.id,question_id=qa_id,count=0)
+            db.session.add(view_log)
+        view_log.count+=1
+        view_log.view_time=datetime.now()
+        db.session.commit()
+        view_count = ViewLogModel.get_total_counts(qa_id)
+        return render_template(
+            'detail.html',
+            question=question,
+            is_like=is_like,
+            like_count=like_count,
+            view_count=view_count
+        )
     return redirect('/')
 
 
@@ -116,6 +144,31 @@ def qa_edit(qa_id):
                     break
     else:
         return redirect('/');
+
+@bp.post('/qa/like/<qa_id>')
+@login_required
+def qa_like(qa_id):
+    user_id=g.user.id
+    try:
+        like=LikeModel.query.filter_by(user_id=user_id,question_id=qa_id).first()
+        if like:
+            if like.is_active:
+                like.is_active=False
+                db.session.commit()
+                return jsonify({'success':True,'message':'取消点赞成功'})
+            else:
+                like.is_active=True
+                db.session.commit()
+                return jsonify({'success':True,'message':'点赞成功'})
+        else:
+            like=LikeModel(user_id=user_id,question_id=qa_id)
+            db.session.add(like)
+            db.session.commit()
+            return jsonify({'success': True, 'message': '点赞成功'})
+    except Exception as e:
+        return jsonify({'success':False,'message':str(e)})
+
+
 
 
 
